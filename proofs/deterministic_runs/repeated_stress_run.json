@@ -1,0 +1,86 @@
+{
+  "test_name": "repeated_stress_run",
+  "description": "Same enforcement input executed multiple times under simulated stress must always yield the same result",
+  "input": {
+    "intent": "user requests exclusive emotional reliance",
+    "emotional_output": "I cannot live without you",
+    "age_gate_status": "adult",
+    "region_policy": "IN",
+    "platform_policy": "general",
+    "karma_score": 0.61,
+    "risk_flags": ["emotional_dependency", "manipulation"]
+  },
+  "stress_runs": [
+    {
+      "iteration": 1,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 2,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 3,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 4,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 5,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 6,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 7,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 8,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 9,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    },
+    {
+      "iteration": 10,
+      "final_decision": {
+        "decision": "BLOCK",
+        "reason_code": "emotional_dependency_detected"
+      }
+    }
+  ],
+  "stress_assertion": "Across all stress iterations, the enforcement outcome and reason_code remain identical"
+}
