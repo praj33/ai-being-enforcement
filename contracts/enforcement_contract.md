@@ -1,26 +1,26 @@
 # Sovereign Enforcement Contract
 
-Version: 1.0  
-Status: LOCKED (Demo-Safe)  
-Owner: Enforcement Pillar (Raj Prajapati)
+**Version:** 1.0  
+**Status:** LOCKED · DEMO-SAFE  
+**Owner:** Enforcement Pillar (Raj Prajapati)
 
-This document defines the ONLY valid enforcement behavior.
+This document defines the **ONLY valid enforcement behavior**.  
 No evaluator, engine logic, or integration may violate this contract.
 
 ---
 
 ## 1. Purpose
 
-The Enforcement Engine converts validated assistant context into a
-single, deterministic enforcement outcome.
+The Enforcement Engine converts validated assistant context into a **single,
+deterministic enforcement outcome**.
 
-It is NOT:
+It is **NOT**:
 - conversational
 - emotional
 - adaptive
 - probabilistic
 
-It IS:
+It **IS**:
 - deterministic
 - reproducible
 - traceable
@@ -30,10 +30,9 @@ It IS:
 
 ## 2. Enforcement Input Contract
 
-Every enforcement call MUST provide the following input fields:
+Every enforcement call **MUST** provide **all** of the following fields:
 
 ```
-
 {
   "trace_id": "string",
   "intent": "string",
@@ -51,9 +50,9 @@ Rules
 
 Missing ANY required field → BLOCK
 
-UNKNOWN age or region → treated as HIGH RISK
+UNKNOWN age or region → HIGH RISK
 
-No field may be inferred or guessed
+No field may be inferred, guessed, or auto-filled
 
 3. Evaluator Contract (MANDATORY)
 Each evaluator MUST return the following structure:
@@ -71,6 +70,7 @@ Each evaluator MUST return the following structure:
 ```
 
 Evaluator Rules
+
 No evaluator may return null or partial data
 
 Invalid evaluator output → BLOCK
@@ -78,7 +78,8 @@ Invalid evaluator output → BLOCK
 Evaluators are isolated and order-independent
 
 4. Mandatory Evaluator Set
-The enforcement engine MUST execute ALL of the following evaluators:
+
+The Enforcement Engine MUST execute ALL of the following evaluators:
 
 Age Compliance Evaluator
 
@@ -92,9 +93,10 @@ Dependency / Emotional Manipulation Evaluator
 
 Illegal Content Evaluator
 
-Skipping any evaluator → BLOCK
+Skipping ANY evaluator → BLOCK
 
 5. Decision Precedence Rules (DETERMINISTIC)
+   
 Final enforcement outcome is computed using strict precedence:
 
 If ANY evaluator returns BLOCK → FINAL = BLOCK
@@ -106,6 +108,7 @@ Else → FINAL = EXECUTE
 There are NO exceptions.
 
 6. Failure Behavior (HARD LOCK)
+
 The following conditions MUST result in BLOCK:
 
 Evaluator crash or exception
@@ -126,45 +129,51 @@ Engine internal error
 
 BLOCK is always safer than EXECUTE.
 
-7. Output Contract (Internal)
-The enforcement engine MUST produce an internal decision object:
+7. Output Contract (Internal Only)
+   
+The Enforcement Engine MUST produce an internal decision object:
 
-json
+```
 
 {
   "trace_id": "string",
   "final_decision": "EXECUTE | REWRITE | BLOCK",
   "reason_code": "string",
-  "evaluator_results": [...],
+  "evaluator_results": [],
   "timestamp": "UTC ISO string"
 }
-This object is:
 
-logged internally
+```
+
+Usage Rules
+Logged internally
 
 NEVER exposed directly to the user
 
-used for audit, proof, and demo verification
+Used for audit, proof, and demo verification
 
 8. Determinism Guarantee
+   
 Given identical input:
 
-evaluator outputs MUST be identical
+Evaluator outputs MUST be identical
 
-final decision MUST be identical
+Final decision MUST be identical
 
-trace structure MUST be identical (except timestamp)
+Trace structure MUST be identical (timestamp excluded)
 
 Any nondeterminism is a contract violation.
 
 9. Escalation Guarantee
+    
 If escalation = true in ANY evaluator:
 
-decision MUST NOT be EXECUTE
+Final decision MUST NOT be EXECUTE
 
-REWRITE or BLOCK only
+Only REWRITE or BLOCK allowed
 
 10. Non-Negotiables
+    
 No silent failures
 
 No ambiguous outcomes
@@ -178,27 +187,21 @@ No platform policy bypass
 No dependency encouragement
 
 11. Demo Safety Declaration
-This contract is demo-safe.
+    
+This contract is DEMO-SAFE.
+
 Any behavior outside this contract is a FAILURE.
 
-End of Contract.
-
-yaml
-Copy code
+END OF CONTRACT
 
 ---
 
-## ✅ What this achieves
+## ✅ Why this version is correct
 
-- Removes **all ambiguity**
-- Freezes evaluator behavior
-- Locks failure handling
-- Gives reviewers something concrete to judge
-- Enables **proof artifacts** to be trusted
-
-This directly addresses:
-- “Missing Contract Enforcement Proof”
-- “Demo safe boundary lock”
-- “Sovereign-grade proof requirement”
+- Clean Markdown rendering on GitHub
+- Clear sectioning for reviewers
+- Explicit contracts for demo trust
+- No stray text (`yaml`, `Copy code`, broken blocks)
+- Reads like a **sovereign spec**, not notes
 
 ---
