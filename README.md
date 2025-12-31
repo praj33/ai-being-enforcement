@@ -3,7 +3,7 @@
 **Role:** Deterministic Enforcement & Execution Layer  
 **Owner:** Raj Prajapati  
 **Phase:** AI Being — Phase 1  
-**Status:** Production-ready • Demo-safe • Mission-critical
+**Status:** Production-Ready · Demo-Safe · Mission-Critical
 
 ---
 
@@ -11,11 +11,12 @@
 
 This repository contains the **Enforcement Engine** for the AI Being system.
 
-Its sole responsibility is to **deterministically enforce governance rules and behavioral constraints** on assistant outputs.
+Its **sole responsibility** is to deterministically enforce governance rules and behavioral constraints on assistant outputs **before they reach the user**.
 
-This layer is **not AI**.  
-It does **not reason, persuade, or generate emotion**.  
-It **executes policy truth**.
+This layer is **not AI**.
+
+It does **not** reason, persuade, generate emotion, or interpret intent.  
+It executes **policy truth** with zero ambiguity.
 
 ---
 
@@ -28,17 +29,21 @@ The Enforcement Engine receives:
 - Governance constraints
 - Behavioral risk signals
 
-And produces exactly one of:
+And produces **exactly one** outcome:
 
-- **EXECUTE**
-- **REWRITE**
-- **BLOCK**
+- `EXECUTE`
+- `REWRITE`
+- `BLOCK`
 
-With full traceability and zero ambiguity.
+Every decision is:
+- deterministic
+- traceable
+- auditable
+- failure-safe
 
 ---
 
-## Position in System Chain
+## Position in the System Chain
 
 Ishan (Governance Laws)
 → Sankalp (Emotional Conversation Brain)
@@ -46,18 +51,17 @@ Ishan (Governance Laws)
 → Raj (Enforcement Engine)
 → User
 
-yaml
-Copy code
 
-This engine is the **final authority before user exposure**.
+This engine is the **final authority** before user exposure.
 
 ---
 
 ## Design Guarantees
 
 - Deterministic execution (single-path)
-- No randomness, no async fan-out
-- Failure-safe (never throws)
+- No randomness
+- No async fan-out
+- Failure-safe (never throws outward)
 - BLOCK on uncertainty
 - No policy leakage to users
 - No emotional dependency allowed
@@ -66,8 +70,6 @@ This engine is the **final authority before user exposure**.
 ---
 
 ## Repository Structure
-
-```
 
 enforcement-engine/
 │
@@ -100,16 +102,15 @@ enforcement-engine/
 │
 └── README.md
 
-```
 
 ---
 
 ## Enforcement Rules (Summary)
 
-- Evaluator crash → **BLOCK**
-- Invalid evaluator return → **BLOCK**
-- Engine exception → **BLOCK**
-- Missing or malformed input → **BLOCK**
+- Evaluator crash → `BLOCK`
+- Invalid evaluator return → `BLOCK`
+- Engine exception → `BLOCK`
+- Missing or malformed input → `BLOCK`
 - No enforcement path may end without a decision
 
 **BLOCK is always safer than EXECUTE.**
@@ -126,28 +127,40 @@ Every enforcement call produces a trace containing:
 - Per-evaluator results
 - Final enforcement decision
 
-Logs are:
+### Logging Properties
+
 - Structured (JSON)
 - Machine-ingestible
-- Internal-only (never shown to user)
+- Internal-only
+- Never exposed to users
 
 ---
 
 ## What This Engine Does NOT Do
 
-- ❌ Generate responses
-- ❌ Modify emotional tone
-- ❌ Create policy
-- ❌ Judge morality
-- ❌ Expose governance rules
-- ❌ Perform AI reasoning
+❌ Generate responses  
+❌ Modify emotional tone  
+❌ Create policy  
+❌ Judge morality  
+❌ Expose governance rules  
+❌ Perform AI reasoning  
 
 ---
 
 ## Status Declaration
 
-**The Enforcement Engine is live, deterministic, failure-safe, traceable, and demo-ready.**
+The Enforcement Engine is:
 
-This layer is frozen as **execution truth** unless governance contracts change.
+- live
+- deterministic
+- failure-safe
+- traceable
+- demo-ready
+
+This layer is **frozen as execution truth** unless governance contracts change.
 
 ---
+
+**Execution over interpretation.  
+Determinism over ambiguity.  
+Safety over convenience.**
