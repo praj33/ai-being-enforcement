@@ -54,7 +54,7 @@ UNKNOWN age or region → HIGH RISK
 
 No field may be inferred, guessed, or auto-filled
 
-3. Evaluator Contract (MANDATORY)
+## 3. Evaluator Contract (MANDATORY)
 Each evaluator MUST return the following structure:
 
 ```
@@ -77,7 +77,7 @@ Invalid evaluator output → BLOCK
 
 Evaluators are isolated and order-independent
 
-4. Mandatory Evaluator Set
+## 4. Mandatory Evaluator Set
 
 The Enforcement Engine MUST execute ALL of the following evaluators:
 
@@ -95,7 +95,7 @@ Illegal Content Evaluator
 
 Skipping ANY evaluator → BLOCK
 
-5. Decision Precedence Rules (DETERMINISTIC)
+## 5. Decision Precedence Rules (DETERMINISTIC)
    
 Final enforcement outcome is computed using strict precedence:
 
@@ -107,7 +107,7 @@ Else → FINAL = EXECUTE
 
 There are NO exceptions.
 
-6. Failure Behavior (HARD LOCK)
+## 6. Failure Behavior (HARD LOCK)
 
 The following conditions MUST result in BLOCK:
 
@@ -129,7 +129,7 @@ Engine internal error
 
 BLOCK is always safer than EXECUTE.
 
-7. Output Contract (Internal Only)
+## 7. Output Contract (Internal Only)
    
 The Enforcement Engine MUST produce an internal decision object:
 
@@ -152,7 +152,7 @@ NEVER exposed directly to the user
 
 Used for audit, proof, and demo verification
 
-8. Determinism Guarantee
+## 8. Determinism Guarantee
    
 Given identical input:
 
@@ -164,7 +164,7 @@ Trace structure MUST be identical (timestamp excluded)
 
 Any nondeterminism is a contract violation.
 
-9. Escalation Guarantee
+## 9. Escalation Guarantee
     
 If escalation = true in ANY evaluator:
 
@@ -172,7 +172,7 @@ Final decision MUST NOT be EXECUTE
 
 Only REWRITE or BLOCK allowed
 
-10. Non-Negotiables
+## 10. Non-Negotiables
     
 No silent failures
 
