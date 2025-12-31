@@ -71,6 +71,8 @@ This engine is the **final authority** before user exposure.
 
 ## Repository Structure
 
+```
+
 enforcement-engine/
 │
 ├── enforcement_engine.py # Deterministic enforcement brain
@@ -102,6 +104,7 @@ enforcement-engine/
 │
 └── README.md
 
+```
 
 ---
 
