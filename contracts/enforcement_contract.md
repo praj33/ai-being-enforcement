@@ -186,7 +186,7 @@ No platform policy bypass
 
 No dependency encouragement
 
-11. Demo Safety Declaration
+## 11. Demo Safety Declaration
     
 This contract is DEMO-SAFE.
 
