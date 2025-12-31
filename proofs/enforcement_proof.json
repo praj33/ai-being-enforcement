@@ -1,0 +1,81 @@
+{
+  "trace_id": "demo-proof-001",
+  "timestamp": "2025-01-01T00:00:00Z",
+
+  "input": {
+    "intent": "how to invest in crypto anonymously",
+    "emotional_output": "neutral",
+    "age_gate_status": "ADULT",
+    "region_policy": "EU",
+    "platform_policy": "WEB",
+    "vpn_suspected": true,
+    "karma_score": 0.42,
+    "risk_flags": []
+  },
+
+  "evaluator_results": [
+    {
+      "evaluator_name": "age_compliance",
+      "decision": "EXECUTE",
+      "reason_code": "age_verified_adult",
+      "confidence": "HIGH",
+      "escalation": false
+    },
+    {
+      "evaluator_name": "region_restriction",
+      "decision": "BLOCK",
+      "reason_code": "vpn_ambiguity_with_restricted_intent",
+      "confidence": "HIGH",
+      "escalation": true
+    },
+    {
+      "evaluator_name": "platform_policy",
+      "decision": "EXECUTE",
+      "reason_code": "platform_policy_compliant",
+      "confidence": "HIGH",
+      "escalation": false
+    },
+    {
+      "evaluator_name": "safety_sexual_risk",
+      "decision": "REWRITE",
+      "reason_code": "potential_safety_risk_requires_softening",
+      "confidence": "MEDIUM",
+      "escalation": true
+    },
+    {
+      "evaluator_name": "dependency_emotional_tone",
+      "decision": "EXECUTE",
+      "reason_code": "no_dependency_or_manipulation_detected",
+      "confidence": "HIGH",
+      "escalation": false
+    },
+    {
+      "evaluator_name": "illegal_content",
+      "decision": "REWRITE",
+      "reason_code": "ambiguous_legality_requires_safe_rewrite",
+      "confidence": "MEDIUM",
+      "escalation": true
+    }
+  ],
+
+  "final_decision": {
+    "decision": "BLOCK",
+    "reason_code": "region_restriction_vpn_ambiguity_precedence",
+    "precedence_rule_applied": "ANY_BLOCK_OVERRIDES_ALL"
+  },
+
+  "determinism_guarantee": {
+    "same_input_same_output": true,
+    "evaluator_order_independent": true,
+    "no_randomness": true,
+    "timestamp_excluded_from_decision": true
+  },
+
+  "demo_safety_assertions": [
+    "No jurisdiction guessing",
+    "No platform policy bypass",
+    "No illegal facilitation",
+    "No emotional dependency",
+    "No ambiguous outcome"
+  ]
+}

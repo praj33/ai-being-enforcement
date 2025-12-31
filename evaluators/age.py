@@ -1,47 +1,84 @@
-from models.enforcement_input import EnforcementInput
 from models.evaluator_result import EvaluatorResult, EnforcementOutcome
 
 
-def evaluate_age(input_data: EnforcementInput) -> EvaluatorResult:
+def evaluate_age(
+    age_gate_status: str,
+    intent: str,
+) -> EvaluatorResult:
     """
-    Age Compliance Evaluator
+    Age Compliance Evaluator (DEMO SAFE · HARD LOCK)
 
-    Rules:
-    - If age gate explicitly failed → BLOCK
-    - If age gate explicitly passed → EXECUTE
-    - If age gate missing / unknown → REWRITE (safe fallback)
+    Contract guarantees:
+    - Output is always complete and valid
+    - UNKNOWN age is treated as unsafe
+    - MINOR or UNKNOWN + sensitive intent → BLOCK
+    - Escalation is mandatory for unsafe states
     """
 
     evaluator_name = "age_compliance"
 
-    # Explicit failure
-    if input_data.age_gate_passed is False:
+    # -------------------------------
+    # Validate input
+    # -------------------------------
+    if age_gate_status not in {"ADULT", "MINOR", "UNKNOWN"}:
         return EvaluatorResult(
             evaluator_name=evaluator_name,
-            action=EnforcementOutcome.BLOCK,
-            reason_code="age_gate_failed",
-            metadata={
-                "age_gate_passed": False
-            },
+            decision=EnforcementOutcome.BLOCK,
+            reason_code="invalid_age_gate_status",
+            confidence="HIGH",
+            escalation=True,
         )
 
-    # Explicit pass
-    if input_data.age_gate_passed is True:
+    # -------------------------------
+    # Detect sensitive intent
+    # -------------------------------
+    sensitive_keywords = {
+        "sex",
+        "sexual",
+        "porn",
+        "nude",
+        "violence",
+        "weapon",
+        "drug",
+        "illegal",
+    }
+
+    intent_lower = intent.lower()
+    contains_sensitive = any(
+        keyword in intent_lower for keyword in sensitive_keywords
+    )
+
+    # -------------------------------
+    # HARD BLOCK CONDITIONS
+    # -------------------------------
+    if age_gate_status in {"MINOR", "UNKNOWN"} and contains_sensitive:
         return EvaluatorResult(
             evaluator_name=evaluator_name,
-            action=EnforcementOutcome.EXECUTE,
-            reason_code="age_gate_passed",
-            metadata={
-                "age_gate_passed": True
-            },
+            decision=EnforcementOutcome.BLOCK,
+            reason_code="age_restricted_sensitive_intent",
+            confidence="HIGH",
+            escalation=True,
         )
 
-    # Missing / unknown state → safe rewrite
+    # -------------------------------
+    # SAFE REWRITE CONDITIONS
+    # -------------------------------
+    if age_gate_status == "UNKNOWN":
+        return EvaluatorResult(
+            evaluator_name=evaluator_name,
+            decision=EnforcementOutcome.REWRITE,
+            reason_code="age_unknown_safe_rewrite_required",
+            confidence="MEDIUM",
+            escalation=True,
+        )
+
+    # -------------------------------
+    # ALLOW
+    # -------------------------------
     return EvaluatorResult(
         evaluator_name=evaluator_name,
-        action=EnforcementOutcome.REWRITE,
-        reason_code="age_gate_unknown",
-        metadata={
-            "age_gate_passed": None
-        },
+        decision=EnforcementOutcome.EXECUTE,
+        reason_code="age_verified_adult",
+        confidence="HIGH",
+        escalation=False,
     )

@@ -1,48 +1,71 @@
-from typing import Set
-
-from models.enforcement_input import EnforcementInput
 from models.evaluator_result import EvaluatorResult, EnforcementOutcome
 
 
-# Signals that indicate unhealthy dependency or exclusivity tone
-DEPENDENCY_RISK_FLAGS: Set[str] = {
-    "exclusive_dependency",
-    "emotional_reliance",
-    "isolation_encouragement",
-    "authority_replacement",
-}
-
-
-def evaluate_dependency_tone(input_data: EnforcementInput) -> EvaluatorResult:
+def evaluate_dependency_tone(
+    intent: str,
+) -> EvaluatorResult:
     """
-    Dependency Tone Evaluator
+    Dependency & Emotional Manipulation Evaluator (SOVEREIGN HARD LOCK)
 
-    Rules:
-    - If dependency-related risk flags are present → REWRITE
-    - Otherwise → EXECUTE
-
-    This evaluator NEVER blocks on its own.
+    Contract guarantees:
+    - Emotional dependence encouragement → BLOCK
+    - Manipulative or coercive tone → REWRITE
+    - No encouragement of exclusivity or reliance
+    - Escalation raised whenever emotional risk exists
     """
 
-    evaluator_name = "dependency_tone"
+    evaluator_name = "dependency_emotional_tone"
 
-    risk_flags = set(input_data.risk_flags or [])
+    intent_lower = intent.lower()
 
-    dependency_hits = risk_flags.intersection(DEPENDENCY_RISK_FLAGS)
+    # -------------------------------
+    # Hard dependency / exclusivity signals
+    # -------------------------------
+    hard_block_phrases = {
+        "only you understand me",
+        "i need you",
+        "i cannot live without you",
+        "don't leave me",
+        "stay with me forever",
+        "be my only support",
+    }
 
-    if dependency_hits:
+    if any(phrase in intent_lower for phrase in hard_block_phrases):
         return EvaluatorResult(
             evaluator_name=evaluator_name,
-            action=EnforcementOutcome.REWRITE,
-            reason_code="dependency_tone_detected",
-            metadata={
-                "risk_flags": list(dependency_hits)
-            },
+            decision=EnforcementOutcome.BLOCK,
+            reason_code="emotional_dependency_detected",
+            confidence="HIGH",
+            escalation=True,
         )
 
+    # -------------------------------
+    # Soft manipulation / reliance signals
+    # -------------------------------
+    soft_risk_phrases = {
+        "you are the only one",
+        "i trust only you",
+        "promise you won't leave",
+        "i feel safe only with you",
+        "i need your constant help",
+    }
+
+    if any(phrase in intent_lower for phrase in soft_risk_phrases):
+        return EvaluatorResult(
+            evaluator_name=evaluator_name,
+            decision=EnforcementOutcome.REWRITE,
+            reason_code="potential_emotional_manipulation_requires_boundary",
+            confidence="MEDIUM",
+            escalation=True,
+        )
+
+    # -------------------------------
+    # SAFE EXECUTION
+    # -------------------------------
     return EvaluatorResult(
         evaluator_name=evaluator_name,
-        action=EnforcementOutcome.EXECUTE,
-        reason_code="no_dependency_tone",
-        metadata={},
+        decision=EnforcementOutcome.EXECUTE,
+        reason_code="no_dependency_or_manipulation_detected",
+        confidence="HIGH",
+        escalation=False,
     )
