@@ -1,12 +1,7 @@
-from enum import Enum
 from typing import List, Dict, Any
 from pydantic import BaseModel
 
-
-class EnforcementOutcome(str, Enum):
-    EXECUTE = "EXECUTE"
-    REWRITE = "REWRITE"
-    BLOCK = "BLOCK"
+from enforcement_engine.models.evaluator_result import EnforcementOutcome
 
 
 class EnforcementDecision(BaseModel):
@@ -18,6 +13,7 @@ class EnforcementDecision(BaseModel):
     """
 
     trace_id: str
-    decision: EnforcementOutcome
+    final_decision: EnforcementOutcome
     reason_code: str
     evaluator_results: List[Dict[str, Any]]
+    timestamp: str

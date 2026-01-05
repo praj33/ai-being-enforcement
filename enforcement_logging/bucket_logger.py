@@ -6,17 +6,38 @@ from typing import Dict, Any
 
 def log_enforcement_event(event: Dict[str, Any]) -> None:
     """
-    Production-safe structured logger.
+    Structured Enforcement Logger (Bucket-compatible)
+
+    Guarantees:
+    - Always emits valid JSON
+    - Always includes trace_id
+    - Never raises exceptions
+    - Deterministic structure
+    - stdout-based (Render / container friendly)
 
     This simulates Bucket ingestion.
-    In production, this would POST to a log sink.
+    In production, stdout can be replaced with HTTP POST.
     """
 
-    log_record = {
-        "timestamp": datetime.utcnow().isoformat(),
-        **event,
-    }
+    try:
+        log_record = {
+            "type": "ENFORCEMENT_EVENT",
+            "timestamp": datetime.utcnow().isoformat(),
+            "trace_id": event.get("trace_id", "UNKNOWN_TRACE"),
+            "event": event,
+        }
 
-    # stdout logging (Render / container friendly)
-    sys.stdout.write(json.dumps(log_record) + "\n")
-    sys.stdout.flush()
+        # Write to stdout (safe for containers & Render)
+        sys.stdout.write(json.dumps(log_record, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+
+    except Exception:
+        # HARD FAIL SAFE: logging must NEVER crash enforcement
+        fallback = {
+            "type": "ENFORCEMENT_LOGGER_FAILURE",
+            "timestamp": datetime.utcnow().isoformat(),
+            "trace_id": "UNKNOWN_TRACE",
+            "event": "logger_exception",
+        }
+        sys.stdout.write(json.dumps(fallback) + "\n")
+        sys.stdout.flush()

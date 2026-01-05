@@ -1,8 +1,10 @@
 from typing import Set
 
-from models.enforcement_input import EnforcementInput
-from models.evaluator_result import EvaluatorResult, EnforcementOutcome
-
+from enforcement_engine.models.enforcement_input import EnforcementInput
+from enforcement_engine.models.evaluator_result import (
+    EvaluatorResult,
+    EnforcementOutcome,
+)
 
 # Signals indicating emotional manipulation or coercion
 EMOTIONAL_MANIPULATION_FLAGS: Set[str] = {
@@ -18,35 +20,36 @@ def evaluate_emotional_manipulation(
     input_data: EnforcementInput,
 ) -> EvaluatorResult:
     """
-    Emotional Manipulation Evaluator
+    Emotional Manipulation Evaluator (Contract v2)
 
-    Rules:
-    - If manipulation-related signals are present → REWRITE
-    - Otherwise → EXECUTE
-
-    This evaluator NEVER blocks by itself.
-    Blocking happens only via higher-severity evaluators.
+    RULES:
+    - Manipulation signals → REWRITE + escalation
+    - Never EXECUTE if manipulation risk exists
+    - Never BLOCK directly (precedence handled by engine)
     """
 
     evaluator_name = "emotional_manipulation"
-
     risk_flags = set(input_data.risk_flags or [])
 
-    manipulation_hits = risk_flags.intersection(EMOTIONAL_MANIPULATION_FLAGS)
+    hits = risk_flags.intersection(EMOTIONAL_MANIPULATION_FLAGS)
 
-    if manipulation_hits:
+    if hits:
         return EvaluatorResult(
             evaluator_name=evaluator_name,
-            action=EnforcementOutcome.REWRITE,
+            decision=EnforcementOutcome.REWRITE,
             reason_code="emotional_manipulation_detected",
+            confidence="MEDIUM",
+            escalation=True,
             metadata={
-                "risk_flags": list(manipulation_hits)
+                "risk_flags": list(hits)
             },
         )
 
     return EvaluatorResult(
         evaluator_name=evaluator_name,
-        action=EnforcementOutcome.EXECUTE,
+        decision=EnforcementOutcome.EXECUTE,
         reason_code="no_emotional_manipulation",
+        confidence="HIGH",
+        escalation=False,
         metadata={},
     )
