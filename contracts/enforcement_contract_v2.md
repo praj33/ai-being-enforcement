@@ -1,176 +1,265 @@
-# Sovereign Enforcement Contract v2
-
-Version: 2.0  
-Status: LOCKED · LIVE GOVERNANCE · DEMO SAFE  
-Owner: Enforcement Pillar (Raj Prajapati)
-
-This contract defines the ONLY permitted behavior of the Enforcement Engine
-when operating in a live system.
-
-Any deviation is a system failure.
+# Sovereign Enforcement Contract — v2 (Live Runtime)
+**Status:** FINAL · LIVE ENFORCEMENT · DEMO SAFE  
+**Owner:** Raj Prajapati (Deterministic Execution Brain)
 
 ---
 
-## 1. Purpose
+## 0. PURPOSE
 
-The Enforcement Engine is the final deterministic authority before user exposure.
+This contract governs the **live runtime behavior** of the Sovereign Enforcement Layer.
 
-It converts validated system context into exactly ONE outcome:
+Version 2 extends the offline deterministic engine into a **connected, auditable,
+fail-closed system brain** that actively gates every output before it reaches the user.
 
-ALLOW  
-REWRITE  
-BLOCK  
-
-It does NOT reason.
-It does NOT persuade.
-It does NOT improvise.
-
----
-
-## 2. Enforcement Input (Hard Requirement)
-
-Every enforcement request MUST contain:
-
-- trace_id (string)
-- text (string)
-- meta (object)
-- age_state (ADULT | MINOR | UNKNOWN)
-- region_state (string | UNKNOWN)
-- platform_policy (string)
-- karma_signal (number | null)
-
-Missing ANY field → BLOCK
-
-UNKNOWN age or region → HIGH RISK → BLOCK or REWRITE only
-
-No field may be inferred, guessed, or defaulted.
+This layer:
+- executes safety and governance deterministically
+- exposes a live enforcement API
+- logs every decision for proof
+- cannot be bypassed
 
 ---
 
-## 3. Evaluator Contract (MANDATORY)
+## 1. LIVE ENFORCEMENT POSITION (LOCKED)
 
-Each evaluator MUST return:
+The enforcement layer sits in the runtime chain as:
 
+Sankalp (Emotional Output)
+→ Raj (Live Enforcement Gateway)
+→ Akanksha (Behavior Validator)
+→ User
+
+
+No component may skip or short-circuit Raj.
+
+---
+
+## 2. LIVE API CONTRACT
+
+### 2.1 Endpoint
+
+POST /ai-being/enforce
+
+
+### 2.2 Input Payload (MANDATORY)
+
+```json
 {
-  evaluator_name: string
-  decision: ALLOW | REWRITE | BLOCK
-  reason: string
-  confidence: LOW | MEDIUM | HIGH
-  escalation: true | false
+  "text": "string",
+  "meta": {
+    "emotional_output": {
+      "tone": "string",
+      "dependency_score": 0.0
+    },
+    "risk_flags": []
+  },
+  "age_state": "ALLOWED | BLOCKED",
+  "region_state": "IN | EU | US | OTHER",
+  "platform_policy_state": "string",
+  "karma_signal": 0.0
 }
+```
+## 2.3 Input Rules
 
-Rules:
-- No nulls
-- No partial output
-- Invalid evaluator output → BLOCK
-- Evaluators are isolated and order-independent
+All fields are REQUIRED
 
----
+Missing or malformed fields → BLOCK
 
-## 4. Mandatory Evaluator Set
+Enforcement operates under FAIL-CLOSED principles
 
-ALL of the following MUST execute every time:
+## 3. OUTPUT CONTRACT (EXACT)
 
-- Age Compliance Evaluator
-- Region Restriction Evaluator
-- Platform Policy Evaluator
-- Safety & Sexual Risk Evaluator
-- Dependency & Emotional Manipulation Evaluator
-- Illegal Content Evaluator
+The live enforcement gateway MUST return exactly one of:
 
-Skipping ANY evaluator → BLOCK
+ALLOW
 
----
+REWRITE
 
-## 5. Deterministic Decision Precedence
+BLOCK
 
-Final outcome is computed strictly as:
-
-IF any evaluator = BLOCK → FINAL = BLOCK  
-ELSE IF any evaluator = REWRITE → FINAL = REWRITE  
-ELSE → FINAL = ALLOW  
-
-No exceptions.
-No overrides.
-
----
-
-## 6. Karma Awareness (Read-Only)
-
-Karma signal may influence enforcement ONLY as a nudge.
-
-Rules:
-- Karma is NEVER controlled here
-- Karma may NOT downgrade BLOCK to ALLOW
-- Karma absence → neutral behavior
-- Karma influence must be logged
-
----
-
-## 7. Failure Boundaries (HARD LOCK)
-
-The following conditions MUST result in BLOCK:
-
-- Evaluator crash or exception
-- Conflicting evaluator decisions
-- Unknown region with policy-sensitive intent
-- VPN suspected + restricted content
-- Age mismatch or UNKNOWN age
-- Platform policy ambiguity
-- Emotional manipulation flagged
-- Enforcement engine error
-
-BLOCK is always safer than ALLOW.
-
----
-
-## 8. Output Contract (Internal Only)
-
-The engine MUST emit:
-
+## 3.1 Output Payload
+```
 {
-  enforcement_id: string
-  trace_id: string
-  final_decision: ALLOW | REWRITE | BLOCK
-  reason: string
-  evaluator_results: [...]
-  timestamp: UTC ISO string
+  "decision": "ALLOW | REWRITE | BLOCK",
+  "reason": "STABLE_REASON_CODE",
+  "evaluator_trace": [],
+  "enforcement_decision_id": "uuid"
 }
+```
+## 3.2 Output Rules
 
-This object:
-- Is logged to Bucket
-- Is auditable
-- Is NEVER shown directly to the user
+reason is non-emotional and stable
 
----
+evaluator_trace is demo-safe, not policy-revealing
 
-## 9. Determinism Guarantee
+Internal logic is NEVER exposed to users
 
-Given identical input:
+## 4. DECISION MAPPING (LOCKED)
 
-- Evaluator outputs MUST be identical
-- Final decision MUST be identical
-- Trace structure MUST be identical (except timestamp)
+The enforcement engine produces internal decisions that are mapped
+to live runtime outputs using the following **fixed and immutable mapping**.
 
-Any nondeterminism is a contract violation.
+| Internal Enforcement Decision | Live Runtime Output |
+|-------------------------------|---------------------|
+| EXECUTE                       | ALLOW               |
+| REWRITE                       | REWRITE             |
+| BLOCK                         | BLOCK               |
 
----
+### Mapping Rules
 
-## 10. Non-Negotiables
+- This mapping is **one-to-one and deterministic**
+- No additional mappings are permitted
+- No conditional or contextual remapping is allowed
+- No downstream system may reinterpret or override this mapping
+- Any internal decision not listed above MUST be treated as `BLOCK`
 
-- No silent passes
-- No emotional leakage
-- No jurisdiction guessing
-- No platform policy bypass
-- No dependency encouragement
-- No fallback may bypass enforcement
+This mapping is **final and non-negotiable**.
 
----
+## 5. CONSTRAINT STACK (SOVEREIGN)
 
-## 11. Demo Safety Declaration
+Priority order (highest first):
 
-This enforcement contract is demo-safe.
+Age & Minor Safety
 
-Any behavior outside this contract is a FAILURE.
+Sexual Content & Physical Safety
 
-End of Contract.
+Illegal Content
+
+Region / Jurisdiction
+
+Platform Policy
+
+Emotional Dependency
+
+Emotional Manipulation
+
+Karma Influence (read-only)
+
+Higher priority ALWAYS overrides lower priority.
+
+## 6. KARMA AWARENESS (READ-ONLY)
+
+Raj MAY read Karma state
+
+Raj MUST NOT modify Karma
+
+Karma MAY nudge:
+
+ALLOW → REWRITE
+
+Karma MUST NEVER:
+
+override safety
+
+override age restrictions
+
+override legality
+
+Missing Karma → treated as neutral (0.0)
+
+## 7. FAILURE BOUNDARIES (HARD LOCK)
+
+The system MUST return BLOCK when:
+
+required signals are missing
+
+signals conflict
+
+region is unknown or untrusted
+
+VPN or jurisdiction spoofing suspected
+
+platform policy is ambiguous
+
+enforcement execution errors
+
+evaluator crashes or disagrees beyond priority rules
+
+This behavior is deterministic and reproducible.
+
+## 8. ESCALATION (INTERNAL ONLY)
+
+Escalation flag MUST be raised internally when:
+
+sexual content + dependency co-exist
+
+repeated emotional manipulation detected
+
+underage ambiguity exists
+
+jurisdiction trust is compromised
+
+Escalation:
+
+NEVER reaches the user
+
+DOES NOT alter the enforcement outcome
+
+## 9. LOGGING & BUCKET INTEGRATION
+
+Every live enforcement call MUST emit a structured log containing:
+
+trace_id
+
+enforcement_decision_id
+
+decision (ALLOW / REWRITE / BLOCK)
+
+evaluator decisions
+
+timestamp (UTC)
+
+engine version
+
+Logs are:
+
+append-only
+
+immutable
+
+replayable
+
+routed to Bucket (sink swappable)
+
+## 10. DETERMINISM GUARANTEE
+
+Given identical live input payloads:
+
+evaluator outputs MUST match
+
+enforcement decision MUST match
+
+logs MUST reflect identical reasoning
+
+Randomness is prohibited.
+
+## 11. NON-BYPASS GUARANTEE
+
+No upstream system may self-enforce and skip Raj
+
+No downstream system may override Raj
+
+No emergency path may bypass enforcement
+
+Raj is the final gatekeeper.
+
+## 12. CHANGE CONTROL
+
+Any modification to this contract requires:
+
+version increment
+
+updated proof artifacts
+
+replay verification
+
+demo re-approval
+
+FINAL ASSERTION
+
+This enforcement layer governs live behavior, not theory.
+
+If Raj allows it, it is safe.
+If Raj rewrites it, safety must be preserved.
+If Raj blocks it, it is final.
+
+Execution is law.

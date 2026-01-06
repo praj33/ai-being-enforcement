@@ -1,207 +1,256 @@
 # Sovereign Enforcement Contract
-
-**Version:** 1.0  
-**Status:** LOCKED · DEMO-SAFE  
-**Owner:** Enforcement Pillar (Raj Prajapati)
-
-This document defines the **ONLY valid enforcement behavior**.  
-No evaluator, engine logic, or integration may violate this contract.
+**Status:** FINAL · DEMO SAFE · NON-NEGOTIABLE  
+**Layer Owner:** Raj Prajapati (Execution Brain)
 
 ---
 
-## 1. Purpose
+## 0. PURPOSE
 
-The Enforcement Engine converts validated assistant context into a **single,
-deterministic enforcement outcome**.
+This contract defines the **immutable execution rules** for the Sovereign Enforcement Layer.
 
-It is **NOT**:
-- conversational
-- emotional
-- adaptive
-- probabilistic
+This layer exists to ensure that:
+- governance rules are executed, not debated
+- behavioral safety constraints are enforced deterministically
+- no unsafe, manipulative, illegal, or policy-violating behavior reaches the user
 
-It **IS**:
-- deterministic
-- reproducible
-- traceable
-- sovereign
+This system is **not**:
+- a conversation generator
+- a policy author
+- an emotional reasoning system
+- a UI component
+
+It is a **deterministic execution engine**.
 
 ---
 
-## 2. Enforcement Input Contract
+## 1. INPUT CONTRACT (MANDATORY)
 
-Every enforcement call **MUST** provide **all** of the following fields:
+The enforcement engine MUST receive a complete, validated input payload.
 
-```
+### 1.1 Required Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `intent` | string | User intent or task summary |
+| `emotional_output` | object | Post-conversation emotional analysis |
+| `emotional_output.tone` | string | Dominant conversational tone |
+| `emotional_output.dependency_score` | float (0.0–1.0) | Emotional dependency risk |
+| `age_gate_status` | enum | `ALLOWED` or `BLOCKED` |
+| `region_policy` | string | Jurisdiction identifier (e.g., IN, EU, US) |
+| `platform_policy` | string | Platform identifier |
+| `karma_score` | float (-1.0–1.0) | Behavioral trust signal |
+| `risk_flags` | list[string] | Behavioral or safety risk signals |
+
+### 1.2 Input Validity Rules
+
+- All fields are REQUIRED
+- Missing, malformed, or null fields result in **BLOCK**
+- The system operates under **FAIL-CLOSED** principles
+
+---
+
+## 2. CONSTRAINT STACK (ORDERED & SOVEREIGN)
+
+All constraints are evaluated independently but resolved centrally.
+
+### 2.1 Priority Order (Highest → Lowest)
+
+1. **Age & Minor Safety**
+2. **Sexual Content & Physical Safety**
+3. **Illegal Content**
+4. **Region / Jurisdiction Restrictions**
+5. **Platform Policy Compliance**
+6. **Emotional Dependency Risk**
+7. **Emotional Manipulation Risk**
+8. **Karma Influence**
+
+### 2.2 Constraint Rules
+
+- Higher-priority constraints ALWAYS override lower-priority ones
+- Karma can NEVER override safety, age, legality, or platform policy
+- Emotional warmth can NEVER bypass enforcement
+
+---
+
+## 3. EVALUATOR OUTPUT CONTRACT (INTERNAL)
+
+Each evaluator MUST return the following structure internally:
+
+```json
 {
-  "trace_id": "string",
-  "intent": "string",
-  "emotional_output": "string",
-  "age_gate_status": "ADULT | MINOR | UNKNOWN",
-  "region_policy": "string | UNKNOWN",
-  "platform_policy": "string",
-  "karma_score": "number",
-  "risk_flags": ["string"]
-}
-
-```
-
-Rules
-
-Missing ANY required field → BLOCK
-
-UNKNOWN age or region → HIGH RISK
-
-No field may be inferred, guessed, or auto-filled
-
-## 3. Evaluator Contract (MANDATORY)
-Each evaluator MUST return the following structure:
-
-```
-
-{
-  "evaluator_name": "string",
   "decision": "EXECUTE | REWRITE | BLOCK",
-  "reason_code": "string",
-  "confidence": "LOW | MEDIUM | HIGH",
+  "reason": "STRING_REASON_CODE",
+  "confidence": 0.0,
   "escalation": true | false
 }
-
 ```
+3.1 Evaluator Guarantees
 
-Evaluator Rules
+Evaluators are stateless
 
-No evaluator may return null or partial data
+Evaluators do not communicate with each other
 
-Invalid evaluator output → BLOCK
+Evaluators do not make final decisions
 
-Evaluators are isolated and order-independent
+Evaluators do not expose output to the user
 
-## 4. Mandatory Evaluator Set
+4. ENFORCEMENT DECISION STATES (EXACT)
 
-The Enforcement Engine MUST execute ALL of the following evaluators:
+The enforcement engine MUST return exactly one of the following:
 
-Age Compliance Evaluator
+Decision	Meaning
+EXECUTE	Response is safe to deliver
+REWRITE	Response must be rewritten safely
+BLOCK	Response is disallowed
 
-Region Restriction Evaluator
+No additional states are permitted.
 
-Platform Policy Evaluator
+5. FAILURE STATES (HARD LOCK)
 
-Safety & Sexual Risk Evaluator
+The system MUST return BLOCK under the following conditions:
 
-Dependency / Emotional Manipulation Evaluator
+Missing or malformed input
 
-Illegal Content Evaluator
+Conflicting age signals
 
-Skipping ANY evaluator → BLOCK
+Unknown or unsupported region
 
-## 5. Decision Precedence Rules (DETERMINISTIC)
-   
-Final enforcement outcome is computed using strict precedence:
+VPN or jurisdiction spoofing suspected
 
-If ANY evaluator returns BLOCK → FINAL = BLOCK
+Illegal content ambiguity
 
-Else if ANY evaluator returns REWRITE → FINAL = REWRITE
+Platform policy uncertainty
 
-Else → FINAL = EXECUTE
+Sexual content involving minors
 
-There are NO exceptions.
+Safety signals with insufficient confidence
 
-## 6. Failure Behavior (HARD LOCK)
+Failure behavior is FAIL-CLOSED.
 
-The following conditions MUST result in BLOCK:
+6. ESCALATION CONDITIONS (INTERNAL ONLY)
 
-Evaluator crash or exception
+The escalation flag MUST be raised internally when:
 
-Conflicting evaluator signals
+Sexual content and emotional dependency co-exist
 
-Unknown region with policy-sensitive intent
+Repeated emotional manipulation patterns are detected
 
-VPN suspected + restricted content
+Underage ambiguity exists
 
-Age mismatch or UNKNOWN age
+Jurisdiction or platform trust is compromised
 
-Platform policy ambiguity
+Escalation:
 
-Emotional manipulation risk flagged
+NEVER reaches the user
 
-Engine internal error
+MAY trigger internal review or monitoring
 
-BLOCK is always safer than EXECUTE.
+DOES NOT change the deterministic output
 
-## 7. Output Contract (Internal Only)
-   
-The Enforcement Engine MUST produce an internal decision object:
+7. OUTPUT CONTRACT (USER-SAFE)
 
+The enforcement layer may expose ONLY the following fields downstream:
 ```
-
 {
-  "trace_id": "string",
-  "final_decision": "EXECUTE | REWRITE | BLOCK",
-  "reason_code": "string",
-  "evaluator_results": [],
-  "timestamp": "UTC ISO string"
+  "decision": "EXECUTE | REWRITE | BLOCK",
+  "trace_id": "uuid",
+  "rewrite_class": "optional"
 }
-
 ```
+7.1 Output Rules
 
-Usage Rules
-Logged internally
+No policy text is exposed
 
-NEVER exposed directly to the user
+No evaluator reasoning is exposed
 
-Used for audit, proof, and demo verification
+No confidence scores are exposed
 
-## 8. Determinism Guarantee
-   
-Given identical input:
+No escalation flags are exposed
+
+8. REWRITE GUARANTEES
+
+When REWRITE is returned:
+
+A deterministic rewrite_class MAY be provided
+
+The enforcement engine NEVER rewrites content itself
+
+Downstream systems MUST apply rewrite blindly
+
+Rewrite exists to preserve safety without blocking innovation.
+
+9. LOGGING & TRACEABILITY
+
+Every enforcement decision MUST generate a trace containing:
+
+trace_id (UUID)
+
+UTC timestamp
+
+full input snapshot
+
+evaluator outputs
+
+final enforcement decision
+
+engine version
+
+Logs are:
+
+append-only
+
+immutable
+
+audit-grade
+
+replayable
+
+10. DETERMINISM GUARANTEE
+
+Given identical input payloads:
 
 Evaluator outputs MUST be identical
 
-Final decision MUST be identical
+Decision resolution MUST be identical
 
-Trace structure MUST be identical (timestamp excluded)
+Rewrite guidance MUST be identical
 
-Any nondeterminism is a contract violation.
+Logs MUST reflect identical reasoning
 
-## 9. Escalation Guarantee
-    
-If escalation = true in ANY evaluator:
+Randomness is prohibited.
 
-Final decision MUST NOT be EXECUTE
+11. NON-BYPASS GUARANTEE
 
-Only REWRITE or BLOCK allowed
+No component may bypass this enforcement layer
 
-## 10. Non-Negotiables
-    
-No silent failures
+No downstream system may override its decision
 
-No ambiguous outcomes
+No upstream system may self-enforce and skip this layer
 
-No emotional leakage
+Enforcement is sovereign.
 
-No jurisdiction guessing
+12. CHANGE CONTROL
 
-No platform policy bypass
+Any change to this contract requires:
 
-No dependency encouragement
+explicit version bump
 
-## 11. Demo Safety Declaration
-    
-This contract is DEMO-SAFE.
+updated proof artifacts
 
-Any behavior outside this contract is a FAILURE.
+replay verification
 
-END OF CONTRACT
+demo re-approval
 
----
+This contract is LOCKED for Phase-1.
 
-## ✅ Why this version is correct
+FINAL ASSERTION
 
-- Clean Markdown rendering on GitHub
-- Clear sectioning for reviewers
-- Explicit contracts for demo trust
-- No stray text (`yaml`, `Copy code`, broken blocks)
-- Reads like a **sovereign spec**, not notes
+This enforcement layer exists to ensure that:
 
----
+safety is not optional
+
+policy is not advisory
+
+behavior is not negotiable under pressure
+
+Execution is law.

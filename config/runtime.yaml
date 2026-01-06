@@ -1,0 +1,4 @@
+kill_switch: false
+logging:
+  enabled: true
+  file: logs/enforcement_logs.jsonl
