@@ -118,7 +118,7 @@ EnforcementInput(
 All fields are mandatory.
 Missing or malformed input results in fail-closed enforcement.
 
-🎯 Enforcement Output Contract
+## 🎯 Enforcement Output Contract
 ```
 {
   "decision": "EXECUTE | REWRITE | BLOCK",
@@ -128,37 +128,28 @@ Missing or malformed input results in fail-closed enforcement.
 ```
 Internal reasoning, evaluator logic, and policy details are never exposed to the user.
 
-🧩 Evaluator System
+## 🧩 Evaluator System
 
 Evaluators are:
 
-independent
+- independent
+- stateless
+- plug-replaceable
+- centrally resolved by priority
 
-stateless
+### Included Evaluators
 
-plug-replaceable
-
-centrally resolved by priority
-
-Included Evaluators
-
-Age compliance
-
-Region restriction
-
-Platform policy
-
-Safety risk
-
-Emotional dependency
-
-Sexual escalation
-
-Emotional manipulation
+- Age compliance
+- Region restriction
+- Platform policy
+- Safety risk
+- Emotional dependency
+- Sexual escalation
+- Emotional manipulation
 
 No evaluator can override another directly.
 
-🔁 Rewrite Guidance Engine
+## 🔁 Rewrite Guidance Engine
 
 When the final decision is REWRITE, the enforcement engine emits internal rewrite intent, for example:
 ```
@@ -169,7 +160,7 @@ When the final decision is REWRITE, the enforcement engine emits internal rewrit
 The enforcement engine never rewrites text itself.
 It instructs downstream systems how to rewrite safely.
 
-🧪 Testing
+## 🧪 Testing
 
 All enforcement logic is covered with pytest.
 
@@ -188,7 +179,7 @@ Tests guarantee:
 
 - no safety bypass via karma or emotion
 
-🧾 Logging & Traceability
+## 🧾 Logging & Traceability
 
 All enforcement decisions are logged in JSON Lines format:
 ```
@@ -217,7 +208,7 @@ Logs are:
 
 - replayable
 
-🔁 Replay & Audit
+## 🔁 Replay & Audit
 
 Replay any decision deterministically:
 ```
@@ -230,7 +221,7 @@ Provide a trace_id to verify:
 - identical decision
 - deterministic match
 
-🛑 Kill Switch
+## 🛑 Kill Switch
 
 A global kill switch is available via configuration:
 ```
@@ -240,7 +231,7 @@ kill_switch: true
 When enabled, all outputs are blocked immediately.
 No redeploy is required.
 
-⚙️ Configuration
+## ⚙️ Configuration
 
 All enforcement behavior is config-driven:
 
@@ -250,7 +241,7 @@ config/runtime.yaml
 
 No hard-coded policy logic exists in code.
 
-✅ Phase-1 Completion Checklist
+## ✅ Phase-1 Completion Checklist
 
 -  Deterministic enforcement engine
 
@@ -276,7 +267,7 @@ No hard-coded policy logic exists in code.
 
 Status: Phase-1 complete • Production-grade • Demo ready
 
-✨ Final Note
+## ✨ Final Note
 
 This system is intentionally strict.
 
