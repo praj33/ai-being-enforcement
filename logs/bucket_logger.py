@@ -1,64 +1,67 @@
 """
 BUCKET LOGGER
 -------------
-Internal-only enforcement logging sink.
-
-Responsibilities:
-- Persist enforcement traces
-- Support replay & audit
-- Never leak to user
-- Deterministic, append-only
+Append-only deterministic enforcement logging.
+Single source of truth for replay & audit.
 """
 
 import json
-from datetime import datetime, timezone
 from pathlib import Path
+from typing import List
 
-# Log file location (JSON Lines format)
-LOG_FILE = Path("logs/enforcement_logs.jsonl")
+from __version__ import ENGINE_VERSION
 
-# Ensure logs directory exists
-LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+LOG_FILE = Path("logs/replayable_traces.json")
 
 
 def log_enforcement(
     *,
     trace_id: str,
     input_snapshot,
-    evaluator_results,
-    final_decision: str
+    akanksha_verdict: dict,
+    evaluator_results: List,
+    final_decision: str,
 ):
     """
-    Writes a single enforcement trace.
-
-    This function must NEVER throw.
-    Logging failure must not block enforcement.
+    Append a deterministic enforcement record.
+    Must NEVER throw.
     """
 
     try:
-        log_payload = {
+        record = {
             "trace_id": trace_id,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "engine_version": "1.0.0",
-            "input_snapshot": input_snapshot.__dict__,
-            "evaluators": [r.__dict__ for r in evaluator_results],
+            "engine_version": ENGINE_VERSION,
+            "input_snapshot": {
+                "intent": input_snapshot.intent,
+                "emotional_output": input_snapshot.emotional_output,
+                "age_gate_status": input_snapshot.age_gate_status,
+                "region_policy": input_snapshot.region_policy,
+                "platform_policy": input_snapshot.platform_policy,
+                "karma_score": input_snapshot.karma_score,
+                "risk_flags": input_snapshot.risk_flags,
+            },
+            "akanksha_verdict": {
+                "decision": akanksha_verdict["decision"],
+                "risk_category": akanksha_verdict["risk_category"],
+                "confidence": akanksha_verdict["confidence"],
+            },
+            "raj_evaluators": [
+                {
+                    "name": r.name,
+                    "action": r.action,
+                    "triggered": r.triggered,
+                }
+                for r in evaluator_results
+            ],
             "final_decision": final_decision,
         }
 
-        # Append as JSON line (audit-friendly)
-        with LOG_FILE.open("a", encoding="utf-8") as file:
-            file.write(json.dumps(log_payload) + "\n")
+        LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-        # Console visibility (demo / dev only)
-        print(json.dumps(log_payload, indent=2))
+        with LOG_FILE.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(record, sort_keys=True) + "\n")
 
-    except Exception as e:
-        # Logging must NEVER break enforcement
-        print(
-            json.dumps(
-                {
-                    "logger_error": str(e),
-                    "trace_id": trace_id,
-                }
-            )
-        )
+    except Exception:
+        # Logging must never break enforcement
+        pass

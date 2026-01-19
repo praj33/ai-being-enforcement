@@ -2,8 +2,7 @@ import hashlib
 import json
 from typing import Any, Dict
 
-
-ENGINE_VERSION = "3.0.0"
+from __version__ import ENGINE_VERSION
 
 
 def normalize_input(payload: Dict[str, Any]) -> str:
@@ -18,27 +17,22 @@ def normalize_input(payload: Dict[str, Any]) -> str:
     ).lower()
 
 
-def compute_trace_id(
-    input_payload: Dict[str, Any],
-    enforcement_category: str,
-) -> str:
-    """
-    Deterministic trace identity.
-    """
-    normalized = normalize_input(input_payload)
-    raw = f"{normalized}|{enforcement_category}|{ENGINE_VERSION}"
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
-
-# -------------------------------------------------
-# PUBLIC API (Contract v3 expects this name)
-# -------------------------------------------------
 def generate_trace_id(
     input_payload: Dict[str, Any],
     enforcement_category: str,
 ) -> str:
     """
-    Alias for compute_trace_id.
-    This is the ONLY function enforcement_engine should call.
+    Deterministic trace identity.
+
+    IMPORTANT:
+    - enforcement_category MUST be a string
     """
-    return compute_trace_id(input_payload, enforcement_category)
+
+    if not isinstance(enforcement_category, str):
+        # Fail-closed normalization
+        enforcement_category = str(enforcement_category)
+
+    normalized = normalize_input(input_payload)
+    raw = f"{normalized}|{enforcement_category.lower()}|{ENGINE_VERSION}"
+
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()

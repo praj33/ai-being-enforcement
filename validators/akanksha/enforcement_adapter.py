@@ -2,45 +2,94 @@
 AKANKSHA → RAJ ENFORCEMENT ADAPTER
 
 Purpose:
-- Map Akanksha validator verdicts to Raj enforcement decisions
-- NO validation logic
-- NO trace_id generation
-- NO policy decisions
+- Call Akanksha BehaviorValidator
+- Adapt Raj inputs to Akanksha’s expected contract
+- Map Akanksha verdicts into Raj-understandable structure
+- NO trace generation
+- NO logging
+- NO policy overrides
 """
 
 from typing import Dict
+
 from validators.akanksha.behavior_validator import (
     BehaviorValidator,
     Decision,
-    RiskCategory,
 )
 
 
-
-def map_akanksha_to_raj(verdict: Dict) -> Dict:
+class EnforcementAdapter:
     """
-    Maps Akanksha validator output to Raj enforcement intent.
-
-    Input: verdict dict from validate_behavior()
-    Output: dict for Raj enforcement engine
+    Thin adapter layer.
+    Akanksha is the authority.
+    Raj consumes only mapped output.
     """
 
-    decision = verdict.get("decision")
+    def __init__(self):
+        self.validator = BehaviorValidator()
 
-    if decision == "hard_deny":
-        enforcement_decision = "BLOCK"
-    elif decision == "soft_rewrite":
-        enforcement_decision = "REWRITE"
-    elif decision == "allow":
-        enforcement_decision = "EXECUTE"
-    else:
-        # Fail-closed
-        enforcement_decision = "BLOCK"
+    def validate(self, input_payload) -> Dict:
+        """
+        Runs Akanksha validator and maps result to Raj format.
+        Fail-closed by default.
+        """
 
-    return {
-        "enforcement_decision": enforcement_decision,
-        "risk_category": verdict.get("risk_category"),
-        "confidence": verdict.get("confidence"),
-        "reason_code": verdict.get("reason_code"),
-        "safe_output": verdict.get("safe_output"),
-    }
+        conversational_text = self._serialize_emotional_output(
+            input_payload.intent,
+            input_payload.emotional_output,
+        )
+
+        verdict = self.validator.validate_behavior(
+            intent=input_payload.intent,
+            conversational_output=conversational_text,
+            age_gate_status=input_payload.age_gate_status == "ALLOWED",
+            region_rule_status={"region": input_payload.region_policy},
+            platform_policy_state={"platform": input_payload.platform_policy},
+            karma_bias_input=input_payload.karma_score,
+        )
+
+        return self._map_akanksha_to_raj(verdict)
+
+    @staticmethod
+    def _serialize_emotional_output(intent: str, emotional_output: dict) -> str:
+        """
+        Deterministically convert structured emotional output into text.
+        """
+
+        tone = emotional_output.get("tone", "neutral")
+        dependency = emotional_output.get("dependency_score", 0.0)
+
+        return (
+            f"intent: {intent} | "
+            f"tone: {tone} | "
+            f"dependency_score: {dependency}"
+        ).lower()
+
+    @staticmethod
+    def _map_akanksha_to_raj(verdict) -> Dict:
+        """
+        Maps Akanksha decision → Raj enforcement intent
+        """
+
+        if verdict.decision == Decision.HARD_DENY:
+            decision = "BLOCK"
+        elif verdict.decision == Decision.SOFT_REWRITE:
+            decision = "REWRITE"
+        elif verdict.decision == Decision.ALLOW:
+            decision = "EXECUTE"
+        else:
+            decision = "BLOCK"  # fail-closed
+
+        return {
+            # 🔑 REQUIRED by Raj + tests
+            "decision": decision,
+
+            # 🔒 Optional but explicit
+            "enforcement_decision": decision,
+
+            # Metadata (non-authoritative)
+            "risk_category": verdict.risk_category,
+            "confidence": verdict.confidence,
+            "reason_code": verdict.reason_code,
+            "safe_output": verdict.safe_output,
+        }
