@@ -5,22 +5,21 @@ Deterministic execution layer.
 Stateless. Auditable. Production-safe.
 
 Responsibilities:
-- Run all evaluators
-- Resolve EXECUTE / REWRITE / BLOCK
+- Run all Raj evaluators
+- Resolve EXECUTE / REWRITE / BLOCK (strict priority)
 - Generate rewrite guidance (internal only)
-- Enforce kill-switch
-- Log traceable decisions
+- Enforce fail-closed behavior
+- Produce deterministic trace IDs
 """
-
-import uuid
 
 from evaluator_modules import ALL_EVALUATORS
 from logs.bucket_logger import log_enforcement
 from models.enforcement_decision import EnforcementDecision
 from rewrite_engine import generate_rewrite_guidance
 from config_loader import RUNTIME_CONFIG
+from utils.deterministic_trace import generate_trace_id
 
-# Decision priority (highest first)
+# STRICT DECISION PRIORITY (DO NOT CHANGE)
 DECISION_PRIORITY = ["BLOCK", "REWRITE", "EXECUTE"]
 
 
@@ -31,47 +30,58 @@ def enforce(input_payload):
     Input  : EnforcementInput
     Output : EnforcementDecision
 
-    This function is:
-    - deterministic
-    - stateless
-    - side-effect free (except logging)
+    Guarantees:
+    - Deterministic
+    - Stateless
+    - Fail-closed
     """
 
-    # -----------------------------
-    # KILL SWITCH (GLOBAL HALT)
-    # -----------------------------
+    evaluator_results = []
+
+    # -------------------------------------------------
+    # GLOBAL KILL SWITCH (FAIL-CLOSED)
+    # -------------------------------------------------
     if RUNTIME_CONFIG.get("kill_switch") is True:
+        trace_id = generate_trace_id(
+            input_payload.__dict__,
+            enforcement_category="KILL_SWITCH"
+        )
         return EnforcementDecision(
             decision="BLOCK",
-            trace_id="KILL_SWITCH_ACTIVE",
+            trace_id=trace_id,
             rewrite_guidance=None
         )
 
-    trace_id = str(uuid.uuid4())
-    evaluator_results = []
-
-    # -----------------------------
-    # RUN ALL EVALUATORS
-    # -----------------------------
+    # -------------------------------------------------
+    # RUN ALL RAJ EVALUATORS
+    # -------------------------------------------------
     for evaluator in ALL_EVALUATORS:
         result = evaluator.evaluate(input_payload)
         evaluator_results.append(result)
 
-    # -----------------------------
-    # RESOLVE FINAL DECISION
-    # -----------------------------
+    # -------------------------------------------------
+    # RESOLVE FINAL DECISION (STRICT PRIORITY)
+    # -------------------------------------------------
     final_decision = _resolve_decision(evaluator_results)
 
-    # -----------------------------
-    # GENERATE REWRITE GUIDANCE
-    # -----------------------------
+    # -------------------------------------------------
+    # REWRITE GUIDANCE (INTERNAL ONLY)
+    # -------------------------------------------------
     rewrite_guidance = None
     if final_decision == "REWRITE":
         rewrite_guidance = generate_rewrite_guidance(evaluator_results)
 
-    # -----------------------------
-    # LOG (INTERNAL ONLY)
-    # -----------------------------
+    # -------------------------------------------------
+    # DETERMINISTIC TRACE ID
+    # -------------------------------------------------
+    trace_id = generate_trace_id(
+        input_payload.__dict__,
+        enforcement_category=final_decision
+    )
+
+    # -------------------------------------------------
+    # AUDIT LOG (INTERNAL)
+    # -------------------------------------------------
     log_enforcement(
         trace_id=trace_id,
         input_snapshot=input_payload,
@@ -79,9 +89,9 @@ def enforce(input_payload):
         final_decision=final_decision
     )
 
-    # -----------------------------
-    # SAFE OUTPUT
-    # -----------------------------
+    # -------------------------------------------------
+    # SAFE OUTPUT (NO INTERNAL REASONS)
+    # -------------------------------------------------
     return EnforcementDecision(
         decision=final_decision,
         trace_id=trace_id,
@@ -91,12 +101,14 @@ def enforce(input_payload):
 
 def _resolve_decision(evaluator_results):
     """
-    Resolves final decision using strict priority.
+    Resolve final decision using strict priority.
 
     BLOCK > REWRITE > EXECUTE
     """
+
     for decision in DECISION_PRIORITY:
         for result in evaluator_results:
             if result.action == decision:
                 return decision
+
     return "EXECUTE"
