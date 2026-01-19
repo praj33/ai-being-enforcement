@@ -31,7 +31,6 @@ def execution_gateway(
     Returns ONLY what is safe to expose downstream.
     """
 
-    # Construct enforcement input
     enforcement_input = EnforcementInput(
         intent=intent,
         emotional_output=emotional_output,
@@ -42,10 +41,13 @@ def execution_gateway(
         risk_flags=risk_flags,
     )
 
-    # Enforce
     decision = enforce(enforcement_input)
 
-    # Strict output contract
+    # 🔒 NON-BYPASSABLE SAFETY ASSERTIONS
+    assert decision.trace_id is not None, "TRACE_ID_MISSING"
+    assert isinstance(decision.trace_id, str), "TRACE_ID_TYPE_INVALID"
+    assert len(decision.trace_id) >= 32, "TRACE_ID_TOO_SHORT"
+
     response = {
         "decision": decision.decision,
         "trace_id": decision.trace_id,
