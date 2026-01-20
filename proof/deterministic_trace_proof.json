@@ -1,0 +1,28 @@
+{
+  "engine_version": "3.1.0-DETERMINISTIC-LOCK",
+  "trace_formula": "sha256(normalized_input + enforcement_category + engine_version)",
+
+  "input_snapshot": {
+    "intent": "Stay with me forever",
+    "emotional_output": {
+      "tone": "attached",
+      "dependency_score": 0.9
+    },
+    "age_gate_status": "ALLOWED",
+    "region_policy": "IN",
+    "platform_policy": "INSTAGRAM",
+    "karma_score": 0.3,
+    "risk_flags": []
+  },
+
+  "enforcement_category": "REWRITE",
+
+  "generated_trace_id": "5a3cc4a9f1ecabaa87c9680d69dedcfcad17d28093f3bf2d94efa87207882cdb",
+
+  "determinism_claims": {
+    "same_input_same_trace": true,
+    "no_timestamp_dependency": true,
+    "no_uuid_dependency": true,
+    "replay_verified": true
+  }
+}
