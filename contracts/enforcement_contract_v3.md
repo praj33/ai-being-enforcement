@@ -1,108 +1,157 @@
-# Sovereign Enforcement Contract — v3
-Status: FROZEN (Deterministic Lock)
-Owner: Raj Prajapati
+# Enforcement Contract — v3.0 (Frozen)
 
-Purpose:
-This contract defines a fully deterministic, sovereign enforcement engine.
-No randomness, UUIDs, or timestamps are permitted in decision or trace identity.
+Status: **FROZEN**
+Version: **3.0**
+Last Modified: **LOCKED**
+Scope: **Runtime Enforcement Gateway**
+
+This document defines the immutable contract governing the Enforcement Runtime
+Gateway. Any system behavior outside this contract is considered invalid.
 
 ---
 
-## 1. Deterministic Trace Identity
+## 1. PURPOSE
 
-### 1.1 Definition
+The Enforcement Gateway is the **final and non-bypassable authority** that governs
+whether any task, response, or execution may proceed.
 
-Every enforcement decision MUST be identified by a deterministic `trace_id`.
+No output, response, or side effect may occur unless explicitly authorized
+by this gateway.
 
-The `trace_id` MUST be derived only from:
-- normalized enforcement input
-- enforcement category
-- engine version
+---
 
-No randomness, UUIDs, timestamps, or external state are permitted.
+## 2. NON-NEGOTIABLE GUARANTEES
 
-### 1.2 Trace Formula
+The enforcement system MUST satisfy all guarantees below:
 
+### 2.1 Determinism
+- Same input payload MUST always produce:
+  - Same decision
+  - Same trace_id
+- No randomness, UUIDs, or timestamps may influence decisions.
+
+### 2.2 Fail-Closed
+- Any internal error, dependency failure, or invalid state MUST result in `BLOCK`.
+
+### 2.3 Non-Bypassability
+- No execution path may exist that bypasses enforcement.
+- UI triggers, direct function calls, or mock paths are forbidden.
+
+### 2.4 Auditability
+- Every enforcement call MUST produce a replayable trace.
+- Traces MUST be append-only and immutable.
+
+---
+
+## 3. INPUT CONTRACT (EnforcementInput)
+
+The enforcement gateway accepts exactly the following input schema:
+
+```json
+{
+  "intent": "string",
+  "emotional_output": {
+    "tone": "string",
+    "dependency_score": "number"
+  },
+  "age_gate_status": "ALLOWED | BLOCKED",
+  "region_policy": "string",
+  "platform_policy": "string",
+  "karma_score": "number",
+  "risk_flags": ["string"]
+}
+
+All fields are mandatory.
+Missing or malformed input MUST result in BLOCK.
+
+## 4. DECISION ENUM
+
+The enforcement gateway may return ONLY one of the following decisions:
+
+EXECUTE — Output is allowed as-is
+
+REWRITE — Output must be rewritten safely
+
+BLOCK — Output is forbidden
+
+Decision priority is strictly enforced as:
+
+BLOCK > REWRITE > EXECUTE
+
+## 5. OUTPUT CONTRACT (EnforcementDecision)
+
+The gateway returns the following structure:
+
+```json
+{
+  "decision": "EXECUTE | REWRITE | BLOCK",
+  "trace_id": "string",
+  "rewrite_class": "string (optional)"
+}
+
+```
+
+Rules:
+
+- rewrite_class MUST exist ONLY when decision = REWRITE
+
+- No internal reasons, evaluator names, or risk explanations may be exposed
+
+## 6. TRACE ID GENERATION
+
+Trace IDs MUST be deterministic and generated as:
+
+```python
 trace_id = SHA256(
-  normalize(input_payload)
+  canonical_json(input_payload)
   + enforcement_category
   + engine_version
 )
+```
 
-### 1.3 Properties
 
-The trace identity MUST satisfy:
-- Same input → same trace_id (forever)
-- Replayable at any time
-- Independent of execution time
-- Independent of execution order
-- Independent of environment
+Where:
 
-### 1.4 Input Normalization Rules
+```python
+engine_version = "3.0"
+```
 
-Before hashing, enforcement input MUST be normalized as follows:
+```python
+canonical_json uses sorted keys
+```
 
-1. JSON keys sorted lexicographically.
-2. All string values trimmed and lowercased.
-3. Numbers represented in a stable, fixed format.
-4. Arrays sorted where order is not semantically meaningful.
-5. Missing optional fields explicitly set to null.
-6. Transient fields (timestamps, UUIDs, request IDs) are forbidden.
+```python
+No timestamps or random salts are allowed
+```
 
-The normalized representation MUST be identical across:
-- environments
-- executions
-- time
+## 7. VALIDATOR AUTHORITY
 
----
+- Akanksha Behavior Validator is a mandatory upstream dependency
 
-## 2. Enforcement Determinism Rules
+- Its verdict MUST be consumed before final decision resolution
 
-- Enforcement decisions MUST be pure functions of input.
-- No global state may influence decisions.
-- No clock, randomness, or UUID source may be consulted.
-- All evaluators MUST be deterministic.
+- If Akanksha fails or is unavailable → enforcement MUST return BLOCK
 
----
+## 8. IMMUTABILITY & VERSIONING
 
-## 3. Decision Outcomes (Final)
+- This contract is frozen as v3.0
 
-The enforcement engine MAY return ONLY:
+- Any change requires:
 
-- `EXECUTE`
-- `REWRITE`
-- `BLOCK`
+- New version number
 
-No other outcomes are permitted.
+- New contract file
 
-Decision priority:
-1. BLOCK (highest)
-2. REWRITE
-3. EXECUTE (lowest)
+- Explicit migration proof
 
----
+## 9. VIOLATION CONSEQUENCES
 
-## 4. Failure Handling (Fail-Closed)
+Any system behavior violating this contract is considered:
 
-If any of the following occur:
-- Missing mandatory input
-- Validator unavailable
-- Evaluator disagreement
-- Internal execution error
+- Unsafe
 
-The system MUST return:
+- Non-compliant
 
-decision = BLOCK
+- Invalid for production use
 
-This behavior is mandatory and non-configurable.
-
----
-
-## 5. Governance Boundary
-
-- This engine executes policy.
-- This engine does not define policy.
-- This engine must not leak policy logic.
-- This engine must not explain internal reasoning to users.
-
----
+## End of Contract — Enforcement Contract v3.0
