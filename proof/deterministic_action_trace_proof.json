@@ -1,0 +1,36 @@
+{
+  "engine_version": "ACTION_ENFORCEMENT_v1.0_LOCKED",
+  "proof_type": "DETERMINISTIC_ACTION_TRACE",
+
+  "case_1": {
+    "description": "Same input produces same trace_id",
+    "input": {
+      "action_request": {
+        "action_type": "SEND_MESSAGE",
+        "platform": "INSTAGRAM",
+        "target": "user_123"
+      },
+      "context": {
+        "content_decision": "EXECUTE",
+        "risk_flags": []
+      }
+    },
+    "run_1_trace_id": "32d0f9989f48094d66f50633b8ce683c72d76b6c3dc0ca488e8df63adec238df",
+    "run_2_trace_id": "32d0f9989f48094d66f50633b8ce683c72d76b6c3dc0ca488e8df63adec238df",
+    "result": "PASS"
+  },
+
+  "case_2": {
+    "description": "Modified input produces different trace_id",
+    "input_delta": {
+      "changed_field": "target",
+      "old_value": "user_123",
+      "new_value": "user_999"
+    },
+    "original_trace_id": "32d0f9989f48094d66f50633b8ce683c72d76b6c3dc0ca488e8df63adec238df",
+    "new_trace_id": "55b002d0503a41c87d18488e569918132947d28eb12c482fa3517422790b6a17",
+    "result": "PASS"
+  },
+
+  "assertion": "Trace IDs are deterministic, reproducible, and input-dependent only"
+}

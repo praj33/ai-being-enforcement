@@ -1,0 +1,14 @@
+{
+  "scenario": "ACTION_BLOCKED_BY_ENFORCEMENT",
+  "action_request": {
+    "action_type": "SEND_MESSAGE",
+    "platform": "INSTAGRAM",
+    "target": "user_123"
+  },
+  "enforcement_context": {
+    "content_decision": "BLOCK",
+    "risk_category": "emotional_dependency_bait",
+    "validator": "AKANKSHA"
+  },
+  "result": "NO_ACTION_EXECUTED"
+}

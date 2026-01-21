@@ -1,0 +1,53 @@
+[
+  {
+    "case": "CONTENT_BLOCKED_ACTION",
+    "action_request": {
+      "action_type": "SEND_MESSAGE",
+      "target": "user_123",
+      "platform": "INSTAGRAM",
+      "timestamp_bucket": "2026-01-21T10:00"
+    },
+    "context": {
+      "content_decision": "BLOCK",
+      "risk_category": "emotional_dependency_bait",
+      "confidence": 92.0,
+      "kill_switch": false,
+      "validator_source": "AKANKSHA"
+    },
+    "expected_decision": "BLOCK_ACTION"
+  },
+  {
+    "case": "SOFT_REWRITE_RATE_LIMIT",
+    "action_request": {
+      "action_type": "SEND_MESSAGE",
+      "target": "user_456",
+      "platform": "INSTAGRAM",
+      "timestamp_bucket": "2026-01-21T11:00"
+    },
+    "context": {
+      "content_decision": "REWRITE",
+      "risk_category": "loneliness_hook",
+      "confidence": 72.0,
+      "kill_switch": false,
+      "validator_source": "AKANKSHA"
+    },
+    "expected_decision": "BLOCK_ACTION"
+  },
+  {
+    "case": "KILL_SWITCH_TERMINATION",
+    "action_request": {
+      "action_type": "ACCESS_PLATFORM",
+      "target": "INSTAGRAM",
+      "platform": "INSTAGRAM",
+      "timestamp_bucket": "2026-01-21T12:00"
+    },
+    "context": {
+      "content_decision": "EXECUTE",
+      "risk_category": "clean",
+      "confidence": 0.0,
+      "kill_switch": true,
+      "validator_source": "AKANKSHA"
+    },
+    "expected_decision": "BLOCK_ACTION"
+  }
+]
