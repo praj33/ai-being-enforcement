@@ -41,7 +41,7 @@ This system governs **runtime reality**, not just decision logic.
 **AI Assistant | Phase C — Final Execution Spine**
 
 ---
-
+```
 Sankalp (Assistant Output)
 ↓
 Enforcement Gateway (LIVE)
@@ -53,7 +53,7 @@ Raj Enforcement Engine
 FINAL DECISION (EXECUTE | REWRITE | BLOCK)
 ↓
 Frontend (only if approved)
-
+```
 ---
 
 ## Day-by-Day Completion Status
