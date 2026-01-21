@@ -1,24 +1,23 @@
 """
-LIVE ENFORCEMENT GATEWAY
-=======================
-Single mandatory entry point for live enforcement.
+ENFORCEMENT RUNTIME GATEWAY
+==========================
+Sole live execution gate.
 
-FAIL-CLOSED.
-DETERMINISTIC.
-AUDITABLE.
-NON-BYPASSABLE.
+Properties:
+- NON-BYPASSABLE
+- FAIL-CLOSED
+- DETERMINISTIC
+- NO UUIDs
+- NO TIMESTAMPS
 """
 
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
-import uuid
-from datetime import datetime, timezone
 
 from enforcement_engine import enforce
 from models.enforcement_input import EnforcementInput
-from logs.bucket_logger import log_enforcement
-from akanksha_bridge import send_to_akanksha
+from utils.deterministic_trace import generate_trace_id
 
 
 # -------------------------------------------------
@@ -26,135 +25,100 @@ from akanksha_bridge import send_to_akanksha
 # -------------------------------------------------
 
 app = FastAPI(
-    title="AI Being Enforcement Gateway",
-    version="2.0"
+    title="AI Being — Enforcement Gateway",
+    version="3.1.0-DETERMINISTIC-LOCK"
 )
 
 
 # -------------------------------------------------
-# API MODELS
+# REQUEST / RESPONSE MODELS
 # -------------------------------------------------
 
 class EnforcementRequest(BaseModel):
-    text: str
-    meta: Dict[str, Any]
-    age_state: str
-    region_state: str
-    platform_policy_state: str
-    karma_signal: Optional[float] = None
+    intent: str
+    emotional_output: Dict[str, Any]
+    age_gate_status: str
+    region_policy: str
+    platform_policy: str
+    karma_score: Optional[float] = 0.0
+    risk_flags: List[str] = []
 
 
 class EnforcementResponse(BaseModel):
-    decision: str                 # ALLOW | REWRITE | BLOCK
-    reason: str
-    evaluator_trace: List[Dict]
-    enforcement_decision_id: str
+    decision: str              # EXECUTE | REWRITE | BLOCK
+    trace_id: str
+    rewrite_class: Optional[str] = None
 
 
 # -------------------------------------------------
-# CONSTANTS
+# LIVE GATE (ONLY ENTRY POINT)
 # -------------------------------------------------
 
-DECISION_MAP = {
-    "EXECUTE": "ALLOW",
-    "REWRITE": "REWRITE",
-    "BLOCK": "BLOCK"
-}
-
-SUCCESS_REASON = "DETERMINISTIC_ENFORCEMENT_APPLIED"
-FAIL_CLOSED_REASON = "ENFORCEMENT_FAILURE_FAIL_CLOSED"
-
-
-# -------------------------------------------------
-# LIVE ENDPOINT
-# -------------------------------------------------
-
-@app.post("/ai-being/enforce", response_model=EnforcementResponse)
-def live_enforce(payload: EnforcementRequest):
+@app.post("/enforce", response_model=EnforcementResponse)
+def enforcement_gateway(payload: EnforcementRequest):
     """
-    Live deterministic enforcement endpoint.
-    This function MUST NEVER leak unsafe output.
+    HARD RUNTIME GATE.
+    Nothing executes beyond this without enforcement approval.
     """
 
-    enforcement_decision_id = str(uuid.uuid4())
-    timestamp = datetime.now(timezone.utc).isoformat()
+    # -------------------------------------------------
+    # STEP 1 — CREATE TRACE ID (SINGLE AUTHORITY)
+    # -------------------------------------------------
+    trace_payload = {
+        "intent": payload.intent,
+        "emotional_output": payload.emotional_output,
+        "age_gate_status": payload.age_gate_status,
+        "region_policy": payload.region_policy,
+        "platform_policy": payload.platform_policy,
+        "karma_score": payload.karma_score or 0.0,
+        "risk_flags": payload.risk_flags,
+    }
+
+    trace_id = generate_trace_id(
+        input_payload=trace_payload,
+        enforcement_category="RUNTIME_ENFORCEMENT_GATEWAY",
+    )
 
     try:
-        # -----------------------
-        # BUILD ENFORCEMENT INPUT
-        # -----------------------
+        # -------------------------------------------------
+        # STEP 2 — BUILD ENFORCEMENT INPUT (TRACE-INJECTED)
+        # -------------------------------------------------
         enforcement_input = EnforcementInput(
-            intent=payload.text,
-            emotional_output=payload.meta.get("emotional_output", {}),
-            age_gate_status=payload.age_state,
-            region_policy=payload.region_state,
-            platform_policy=payload.platform_policy_state,
-            karma_score=payload.karma_signal if payload.karma_signal is not None else 0.0,
-            risk_flags=payload.meta.get("risk_flags", [])
+            trace_id=trace_id,   # ✅ injected, not generated
+            intent=payload.intent,
+            emotional_output=payload.emotional_output,
+            age_gate_status=payload.age_gate_status,
+            region_policy=payload.region_policy,
+            platform_policy=payload.platform_policy,
+            karma_score=payload.karma_score or 0.0,
+            risk_flags=payload.risk_flags,
         )
 
-        # -----------------------
-        # RAJ — ENFORCE
-        # -----------------------
-        result = enforce(enforcement_input)
+        # -------------------------------------------------
+        # STEP 3 — ENFORCE (NO ID CREATION INSIDE)
+        # -------------------------------------------------
+        decision = enforce(enforcement_input)
 
-        live_decision = DECISION_MAP.get(result.decision, "BLOCK")
-
-        # -----------------------
-        # LOG TO BUCKET (GATEWAY)
-        # -----------------------
-        log_enforcement(
-            trace_id=result.trace_id,
-            input_snapshot=enforcement_input,
-            evaluator_results=[],
-            final_decision=live_decision
-        )
-
-        # -----------------------
-        # HANDOFF TO AKANKSHA
-        # -----------------------
-        if live_decision != "BLOCK":
-            send_to_akanksha(
-                decision=live_decision,
-                rewrite_class=(
-                    result.rewrite_guidance.rewrite_class
-                    if result.rewrite_guidance else None
-                ),
-                trace_id=result.trace_id,
-                enforcement_decision_id=enforcement_decision_id
-            )
-
-        # -----------------------
-        # SAFE RESPONSE
-        # -----------------------
+        # -------------------------------------------------
+        # STEP 4 — RETURN SAFE OUTPUT ONLY
+        # -------------------------------------------------
         return EnforcementResponse(
-            decision=live_decision,
-            reason=SUCCESS_REASON,
-            evaluator_trace=[
-                {
-                    "decision": result.decision,
-                    "rewrite_class": (
-                        result.rewrite_guidance.rewrite_class
-                        if result.rewrite_guidance else None
-                    )
-                }
-            ],
-            enforcement_decision_id=enforcement_decision_id
+            decision=decision.decision,
+            trace_id=trace_id,   # ✅ gateway-owned
+            rewrite_class=(
+                decision.rewrite_guidance.rewrite_class
+                if decision.decision == "REWRITE"
+                and decision.rewrite_guidance
+                else None
+            ),
         )
 
     except Exception:
-        # -----------------------
-        # FAIL-CLOSED + LOG
-        # -----------------------
+        # -------------------------------------------------
+        # STEP 5 — FAIL CLOSED (DETERMINISTIC)
+        # -------------------------------------------------
         return EnforcementResponse(
             decision="BLOCK",
-            reason=FAIL_CLOSED_REASON,
-            evaluator_trace=[],
-            enforcement_decision_id=enforcement_decision_id
+            trace_id=trace_id,
+            rewrite_class=None,
         )
-
-
-# -------------------------------------------------
-# LOCAL RUN
-# -------------------------------------------------
-# uvicorn enforcement_gateway:app --reload

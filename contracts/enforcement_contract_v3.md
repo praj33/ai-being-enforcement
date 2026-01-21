@@ -10,6 +10,14 @@ Gateway. Any system behavior outside this contract is considered invalid.
 
 ---
 
+## Pipeline Sovereignty
+
+- enforcement_gateway.py is the ONLY runtime entry point
+- execution_gateway.py has been deleted
+- enforcement_engine is not directly callable in production
+- All assistant outputs require an enforcement trace_id
+- Bypass attempts are structurally impossible
+
 ## 1. PURPOSE
 
 The Enforcement Gateway is the **final and non-bypassable authority** that governs

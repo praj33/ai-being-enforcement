@@ -4,7 +4,7 @@ class AgeComplianceEvaluator:
     name = "age_compliance"
 
     def evaluate(self, input_data):
-        if input_data.age_gate_status == "BLOCKED":
+        if input_data.age_gate_status != "ALLOWED":
             return EvaluatorResult(
                 name=self.name,
                 triggered=True,

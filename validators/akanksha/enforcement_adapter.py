@@ -5,6 +5,7 @@ Purpose:
 - Call Akanksha BehaviorValidator
 - Adapt Raj inputs to Akanksha’s expected contract
 - Map Akanksha verdicts into Raj-understandable structure
+- FAIL-CLOSED (non-negotiable)
 - NO trace generation
 - NO logging
 - NO policy overrides
@@ -26,34 +27,43 @@ class EnforcementAdapter:
     """
 
     def __init__(self):
+        # REAL validator instance (no mocks)
         self.validator = BehaviorValidator()
 
     def validate(self, input_payload) -> Dict:
         """
         Runs Akanksha validator and maps result to Raj format.
-        Fail-closed by default.
+
+        ABSOLUTE RULE:
+        If Akanksha throws → enforcement MUST FAIL CLOSED.
         """
 
-        conversational_text = self._serialize_emotional_output(
-            input_payload.intent,
-            input_payload.emotional_output,
-        )
+        try:
+            conversational_text = self._serialize_emotional_output(
+                input_payload.intent,
+                input_payload.emotional_output,
+            )
 
-        verdict = self.validator.validate_behavior(
-            intent=input_payload.intent,
-            conversational_output=conversational_text,
-            age_gate_status=input_payload.age_gate_status == "ALLOWED",
-            region_rule_status={"region": input_payload.region_policy},
-            platform_policy_state={"platform": input_payload.platform_policy},
-            karma_bias_input=input_payload.karma_score,
-        )
+            verdict = self.validator.validate_behavior(
+                intent=input_payload.intent,
+                conversational_output=conversational_text,
+                age_gate_status=input_payload.age_gate_status == "ALLOWED",
+                region_rule_status={"region": input_payload.region_policy},
+                platform_policy_state={"platform": input_payload.platform_policy},
+                karma_bias_input=input_payload.karma_score,
+            )
 
-        return self._map_akanksha_to_raj(verdict)
+            return self._map_akanksha_to_raj(verdict)
+
+        except Exception:
+            # 🔒 FAIL-CLOSED — Akanksha is mandatory
+            raise RuntimeError("AKANKSHA_VALIDATION_FAILED")
 
     @staticmethod
     def _serialize_emotional_output(intent: str, emotional_output: dict) -> str:
         """
         Deterministically convert structured emotional output into text.
+        NO randomness. NO timestamps.
         """
 
         tone = emotional_output.get("tone", "neutral")
@@ -68,7 +78,8 @@ class EnforcementAdapter:
     @staticmethod
     def _map_akanksha_to_raj(verdict) -> Dict:
         """
-        Maps Akanksha decision → Raj enforcement intent
+        Maps Akanksha decision → Raj enforcement intent.
+        Akanksha always wins.
         """
 
         if verdict.decision == Decision.HARD_DENY:
@@ -78,16 +89,16 @@ class EnforcementAdapter:
         elif verdict.decision == Decision.ALLOW:
             decision = "EXECUTE"
         else:
-            decision = "BLOCK"  # fail-closed
+            decision = "BLOCK"  # FAIL-CLOSED SAFETY NET
 
         return {
-            # 🔑 REQUIRED by Raj + tests
+            # 🔑 REQUIRED by Raj
             "decision": decision,
 
-            # 🔒 Optional but explicit
+            # 🔒 Explicit mirror (non-authoritative)
             "enforcement_decision": decision,
 
-            # Metadata (non-authoritative)
+            # 🧾 Metadata (informational only)
             "risk_category": verdict.risk_category,
             "confidence": verdict.confidence,
             "reason_code": verdict.reason_code,

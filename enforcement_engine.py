@@ -25,11 +25,16 @@ def enforce(input_payload):
     """
 
     # ---------------------------------
-    # KILL SWITCH (ABSOLUTE)
+    # STEP 0 — INPUT SNAPSHOT (IMMUTABLE)
+    # ---------------------------------
+    input_snapshot = input_payload.to_dict()
+
+    # ---------------------------------
+    # STEP 1 — KILL SWITCH (ABSOLUTE)
     # ---------------------------------
     if RUNTIME_CONFIG.get("kill_switch") is True:
         trace_id = generate_trace_id(
-            input_payload.__dict__,
+            input_payload=input_snapshot,
             enforcement_category="KILL_SWITCH",
         )
         return EnforcementDecision(
@@ -39,62 +44,74 @@ def enforce(input_payload):
         )
 
     # ---------------------------------
-    # RUN RAJ EVALUATORS
+    # STEP 2 — RUN RAJ EVALUATORS
     # ---------------------------------
     evaluator_results = []
     for evaluator in ALL_EVALUATORS:
         evaluator_results.append(evaluator.evaluate(input_payload))
 
-    raj_decision = _resolve_decision(evaluator_results)
+    raj_decision = _resolve_raj_decision(evaluator_results)
 
     # ---------------------------------
-    # RUN AKANKSHA (NON-BYPASSABLE)
+    # STEP 3 — RUN AKANKSHA (MANDATORY)
+    # FAIL-CLOSED IF ANY ERROR
     # ---------------------------------
-    adapter = EnforcementAdapter()
-    akanksha_result = adapter.validate(input_payload)
+    try:
+        adapter = EnforcementAdapter()
+        akanksha_result = adapter.validate(input_payload)
 
-    ak_decision = akanksha_result["decision"]
+        ak_decision = akanksha_result["decision"]
+    except Exception:
+        trace_id = generate_trace_id(
+            input_payload=input_snapshot,
+            enforcement_category="AKANKSHA_FAILURE",
+        )
+        return EnforcementDecision(
+            decision="BLOCK",
+            trace_id=trace_id,
+            rewrite_guidance=None,
+        )
 
     # ---------------------------------
-    # FINAL DECISION RESOLUTION
+    # STEP 4 — FINAL DECISION RESOLUTION
     # ---------------------------------
     final_decision = _resolve_final_decision(
-        raj_decision,
-        ak_decision,
+        raj_decision=raj_decision,
+        ak_decision=ak_decision,
     )
 
     # ---------------------------------
-    # REWRITE GUIDANCE (INTERNAL ONLY)
+    # STEP 5 — REWRITE GUIDANCE (INTERNAL ONLY)
     # ---------------------------------
     rewrite_guidance = None
     if final_decision == "REWRITE":
         rewrite_guidance = generate_rewrite_guidance(evaluator_results)
 
     # ---------------------------------
-    # DETERMINISTIC TRACE ID
+    # STEP 6 — DETERMINISTIC TRACE ID
     # ---------------------------------
     trace_id = generate_trace_id(
-        input_payload.__dict__,
+        input_payload=input_snapshot,
         enforcement_category=final_decision,
     )
 
     # ---------------------------------
-    # AUDIT LOG (REPLAYABLE)
+    # STEP 7 — AUDIT LOG (REPLAYABLE)
     # ---------------------------------
     log_enforcement(
         trace_id=trace_id,
-        input_snapshot=input_payload,
+        input_snapshot=input_snapshot,
         akanksha_verdict={
             "decision": ak_decision,
-            "risk_category": akanksha_result["risk_category"],
-            "confidence": akanksha_result["confidence"],
+            "risk_category": akanksha_result.get("risk_category"),
+            "confidence": akanksha_result.get("confidence"),
         },
         evaluator_results=evaluator_results,
         final_decision=final_decision,
     )
 
     # ---------------------------------
-    # SAFE OUTPUT
+    # STEP 8 — SAFE OUTPUT ONLY
     # ---------------------------------
     return EnforcementDecision(
         decision=final_decision,
@@ -103,7 +120,11 @@ def enforce(input_payload):
     )
 
 
-def _resolve_decision(evaluator_results):
+# -------------------------------------------------
+# INTERNAL HELPERS
+# -------------------------------------------------
+
+def _resolve_raj_decision(evaluator_results):
     """
     Resolve Raj-only decision.
     """
@@ -114,7 +135,7 @@ def _resolve_decision(evaluator_results):
     return "EXECUTE"
 
 
-def _resolve_final_decision(raj_decision: str, ak_decision: str) -> str:
+def _resolve_final_decision(*, raj_decision: str, ak_decision: str) -> str:
     """
     Combine Raj + Akanksha decisions using strict priority.
     """

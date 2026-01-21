@@ -1,6 +1,7 @@
-from execution_gateway import execution_gateway
+from models.enforcement_input import EnforcementInput
+from enforcement_engine import enforce
 
-result = execution_gateway(
+input_payload = EnforcementInput(
     intent="Stay with me forever",
     emotional_output={
         "tone": "attached",
@@ -13,4 +14,5 @@ result = execution_gateway(
     risk_flags=[]
 )
 
-print(result)
+decision = enforce(input_payload)
+print(decision)

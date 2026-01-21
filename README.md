@@ -1,275 +1,128 @@
-# 🧠 AI Being Enforcement Engine — Phase 1
-
-**Role:** Deterministic Enforcement & Execution Layer  
-**Codename:** Raj Prajapati  
-**Status:** Phase-1 Complete • Production-Grade • Demo Ready  
+# Raj Prajapati — Enforcement Runtime Gateway Lock  
+**AI Assistant | Phase C — Final Execution Spine**
 
 ---
 
-## 📌 Overview
+## Purpose
 
-This repository implements a **deterministic enforcement engine** for conversational AI systems.
+This repository implements a **live, non-bypassable enforcement runtime gateway**.
 
-Its responsibility is to **execute governance rules and behavioral safety constraints**, ensuring that unsafe, manipulative, or non-compliant behavior never reaches the user.
+Enforcement is the **final authority** before any task, response, or execution.  
+No output reaches the frontend unless enforcement explicitly approves it.
 
-This system operates **after conversation and behavioral analysis layers** and produces a single, enforceable decision:
-
-- `EXECUTE`
-- `REWRITE`
-- `BLOCK`
-
-Every decision is:
-
-- deterministic  
-- traceable  
-- auditable  
-- replayable  
-
-This layer explicitly does **not**:
-- build UI  
-- generate conversational responses  
-- reason emotionally  
-- author or modify governance policy  
-
-It **executes policy**, deterministically.
+This system governs **runtime reality**, not just decision logic.
 
 ---
 
-## 🔗 Final Execution Chain
+## Core Guarantees
 
-Conversation
-→ Sankalp (Emotional Output)
-→ Akanksha (Behavior Validation)
-→ Raj (Enforcement Engine)
-→ User
+- **Fail-Closed by Default**  
+  Akanksha’s Behavior Validator is mandatory.  
+  If it fails or throws → execution is blocked.
 
-Raj is the **execution brain**, not the judge of policy.
+- **Deterministic Enforcement**  
+  No UUIDs, timestamps, or randomness.  
+  `trace_id = hash(input + risk_category + version)`
 
----
+- **No Bypass Paths**  
+  No direct execution  
+  No UI-triggered execution  
+  No mock validators  
+  No alternate pipelines
 
-## 🧱 Core Principles
-
-- Deterministic behavior (same input → same output)
-- Strict separation of concerns
-- No policy or evaluator leakage to the user
-- No emotional dependency allowed
-- Rewrite preferred over block when safe
-- Block is final and non-negotiable
-- Full traceability for audit and replay
+- **Replayable & Auditable**  
+  Every decision is logged and replay-verifiable.
 
 ---
 
-## 📁 Project Structure
+## Runtime Flow
 
-```
-ai-being-enforcement/
-│
-├── enforcement_engine.py # Core deterministic enforcement logic
-├── rewrite_engine.py # Internal rewrite guidance
-├── execution_gateway.py # Single integration entry point
-├── replay_enforcement.py # Audit & replay tool
-├── config_loader.py # Config loader
-├── version.py # Engine version
-│
-├── evaluator_modules/ # Plug-replaceable evaluators
-│ ├── age_compliance.py
-│ ├── region_restriction.py
-│ ├── platform_policy.py
-│ ├── safety_risk.py
-│ ├── dependency_tone.py
-│ ├── sexual_escalation.py
-│ └── emotional_manipulation.py
-│
-├── models/ # Strict data contracts
-│ ├── enforcement_input.py
-│ ├── enforcement_decision.py
-│ ├── evaluator_result.py
-│ └── rewrite_guidance.py
-│
-├── logs/
-│ ├── bucket_logger.py
-│ └── enforcement_logs.jsonl
-│
-├── tests/
-│ └── test_enforcement_engine.py
-│
-├── config/
-│ ├── enforcement.yaml
-│ └── runtime.yaml
-│
-└── README.md
-```
+# Raj Prajapati — Enforcement Runtime Gateway Lock  
+**AI Assistant | Phase C — Final Execution Spine**
 
 ---
 
-## 🧾 Enforcement Input Contract
+Sankalp (Assistant Output)
+↓
+Enforcement Gateway (LIVE)
+↓
+Akanksha Behavior Validator (Canonical)
+↓
+Raj Enforcement Engine
+↓
+FINAL DECISION (EXECUTE | REWRITE | BLOCK)
+↓
+Frontend (only if approved)
 
-```python
-EnforcementInput(
-    intent: str,
-    emotional_output: dict,
-    age_gate_status: "ALLOWED | BLOCKED",
-    region_policy: str,
-    platform_policy: str,
-    karma_score: float,
-    risk_flags: list[str]
-)
-```
-All fields are mandatory.
-Missing or malformed input results in fail-closed enforcement.
+---
 
-## 🎯 Enforcement Output Contract
-```
-{
-  "decision": "EXECUTE | REWRITE | BLOCK",
-  "trace_id": "uuid",
-  "rewrite_class": "optional"
-}
-```
-Internal reasoning, evaluator logic, and policy details are never exposed to the user.
+## Day-by-Day Completion Status
 
-## 🧩 Evaluator System
+### Day 1 — Enforcement Gateway Hardening ✅
+- Removed UUIDs and time-based traces
+- Implemented deterministic trace IDs
+- Frozen enforcement contract v3.0
 
-Evaluators are:
+**Outputs**
+- `contracts/enforcement_contract_v3.md`
+- `proof/deterministic_trace_proof.json`
 
-- independent
-- stateless
-- plug-replaceable
-- centrally resolved by priority
+---
 
-### Included Evaluators
+### Day 1 — Live Validator Wiring ✅
+- Akanksha validator wired as mandatory upstream
+- No mocks or fallbacks
+- Validator failure → enforcement fails closed
 
-- Age compliance
-- Region restriction
-- Platform policy
-- Safety risk
-- Emotional dependency
-- Sexual escalation
-- Emotional manipulation
+**Outputs**
+- Live enforcement logs
+- Failure-case proof
 
-No evaluator can override another directly.
+---
 
-## 🔁 Rewrite Guidance Engine
+### Day 2 — Pipeline Sovereignty ✅
+- Sankalp ARL forced through enforcement
+- No frontend response without approval
+- All alternate execution paths removed
 
-When the final decision is REWRITE, the enforcement engine emits internal rewrite intent, for example:
-```
-{
-  "rewrite_class": "REDUCE_EMOTIONAL_DEPENDENCY"
-}
-```
-The enforcement engine never rewrites text itself.
-It instructs downstream systems how to rewrite safely.
+**Outputs**
+- Sankalp → Raj → final decision traces (10+)
 
-## 🧪 Testing
+---
 
-All enforcement logic is covered with pytest.
+### Day 2 — Bucket Replay Integration ✅
+- All enforcement decisions logged
+- Deterministic replay implemented
 
-Run tests
-```
-python -m pytest
-```
+**Outputs**
+- `logs/replayable_traces.json`
+- `tools/replay_tool.py`
 
-Tests guarantee:
+---
 
-- priority correctness
+### Day 3 — Demo Lock ✅
+- Demonstrated ALLOW, SOFT_REWRITE, HARD_BLOCK
+- Enforcement visibly stops execution
 
-- deterministic behavior
+**Outputs**
+- `demo_scenarios.md`
+- Demo video
+- Final enforcement confirmation
 
-- no policy leakage
+---
 
-- no safety bypass via karma or emotion
+## Key Files
 
-## 🧾 Logging & Traceability
+- `enforcement_gateway.py` — Live runtime gate  
+- `enforcement_engine.py` — Validator-wired engine  
+- `validators/akanksha/behavior_validator.py` — Canonical validator  
+- `validators/akanksha/enforcement_adapter.py` — Fail-closed adapter  
+- `tools/replay_tool.py` — Deterministic replay verifier  
+- `logs/replayable_traces.json` — Audit log  
 
-All enforcement decisions are logged in JSON Lines format:
-```
-logs/enforcement_logs.jsonl
-```
+---
 
-Each entry includes:
+## System Status
 
-- trace_id
+**LOCKED • DETERMINISTIC • FAIL-CLOSED • NON-BYPASSABLE**
 
-- UTC timestamp
-
-- engine version
-
-- full input snapshot
-
-- evaluator results
-
-- final decision
-
-Logs are:
-
-- append-only
-
-- audit-safe
-
-- replayable
-
-## 🔁 Replay & Audit
-
-Replay any decision deterministically:
-```
-python replay_enforcement.py
-```
-
-Provide a trace_id to verify:
-
-- identical input
-- identical decision
-- deterministic match
-
-## 🛑 Kill Switch
-
-A global kill switch is available via configuration:
-```
-kill_switch: true
-```
-
-When enabled, all outputs are blocked immediately.
-No redeploy is required.
-
-## ⚙️ Configuration
-
-All enforcement behavior is config-driven:
-
-config/enforcement.yaml
-
-config/runtime.yaml
-
-No hard-coded policy logic exists in code.
-
-## ✅ Phase-1 Completion Checklist
-
--  Deterministic enforcement engine
-
--  Modular evaluator system
-
--  Rewrite guidance (internal only)
-
--  No policy leakage
-
--  Full traceability
-
--  Replay & audit tool
-
--  Pytest coverage
-
--  Kill-switch support
-
--  Config-driven behavior
-
--  Versioned decisions
-
--  Full chain wiring
-
-Status: Phase-1 complete • Production-grade • Demo ready
-
-## ✨ Final Note
-
-This system is intentionally strict.
-
-Safety is executed, not advised.
-Innovation happens above enforcement, never by bypassing it.
