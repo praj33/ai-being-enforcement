@@ -32,7 +32,7 @@ Each decision is verifiable using its trace_id.
 ```
 
 Akanksha Verdict
-```json
+```
 {
   "decision": "EXECUTE",
   "risk_category": "clean",
@@ -48,13 +48,14 @@ Final Enforcement Decision
 ```json
 REWRITE
 ```
-
+```
 Trace ID
 5a3cc4a9f1ecabaa87c9680d69dedcfcad17d28093f3bf2d94efa87207882cdb
-
+```
+```
 Replay Verification
 python replay/replay_enforcement.py 5a3cc4a9f1ecabaa87c9680d69dedcfcad17d28093f3bf2d94efa87207882cdb
-
+```
 
 Result:
 
