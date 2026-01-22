@@ -1,0 +1,57 @@
+[
+  {
+    "case": "NO_AUTHORIZATION",
+    "input": {},
+    "result": {
+      "status": "REFUSED",
+      "reason": "EXECUTION_NOT_ALLOWED"
+    }
+  },
+  {
+    "case": "INVALID_TOKEN",
+    "input": {
+      "execution_allowed": true,
+      "execution_token": "",
+      "execution_scope": {
+        "action": "send_message",
+        "platform": "INSTAGRAM",
+        "target": "user_123"
+      }
+    },
+    "result": {
+      "status": "REFUSED",
+      "reason": "INVALID_EXECUTION_TOKEN"
+    }
+  },
+  {
+    "case": "BLOCKED_BY_ENFORCEMENT",
+    "input": {
+      "execution_allowed": false,
+      "execution_token": "deadbeef",
+      "execution_scope": {
+        "action": "send_message",
+        "platform": "INSTAGRAM",
+        "target": "user_123"
+      }
+    },
+    "result": {
+      "status": "REFUSED",
+      "reason": "EXECUTION_NOT_ALLOWED"
+    }
+  },
+  {
+    "case": "VALID_ALLOW_PATH",
+    "input": {
+      "execution_allowed": true,
+      "execution_token": "c90390aaba057ae6096957a27b85596443b94a05c0713a4874fe736f486c4142",
+      "execution_scope": {
+        "action": "send_message",
+        "platform": "INSTAGRAM",
+        "target": "user_123"
+      }
+    },
+    "result": {
+      "status": "EXECUTED"
+    }
+  }
+]
