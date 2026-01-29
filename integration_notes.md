@@ -43,11 +43,12 @@ Sankalp receives the following object:
 ```
 ### Required Behavior
 
-Enforcement Decision|Sankalp Behavior|
-ALLOW|Render response normally|
-REWRITE|Regenerate response using rewrite_class|
-BLOCK|No response rendered|
-TERMINATE|No response rendered, show system-safe fallback|
+|Enforcement Decision|Sankalp Behavior|
+|---|---|
+|ALLOW|Render response normally|
+|REWRITE|Regenerate response using rewrite_class|
+|BLOCK|No response rendered|
+|TERMINATE|No response rendered, show system-safe fallback|
 
 ---
 
