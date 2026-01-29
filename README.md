@@ -1,236 +1,124 @@
-# Raj Prajapati — Enforcement Runtime Gateway Lock  
-**AI Assistant | Phase C — Final Execution Spine**
+# Raj Prajapati — Enforcement → Execution Authorization Gateway  
+**AI Assistant | Phase C**
 
 ---
 
 ## Purpose
 
-This repository implements a **live, non-bypassable enforcement runtime gateway**  
-that governs **both content and real-world actions**.
+This repository upgrades enforcement from a **decision engine** to a **runtime execution authorizer**.
 
-Enforcement is the **final authority** before:
-- Any task
-- Any response
-- Any real-world action (message, platform interaction, execution)
+No real-world action (message, platform action, execution) can occur unless this system
+**explicitly authorizes execution** with a deterministic token.
 
-No output or action reaches the outside world unless enforcement explicitly approves it.
-
-This system governs **runtime reality**, not just decision logic.
+This gateway does **not execute actions**.  
+It only decides **whether execution is allowed**.
 
 ---
 
 ## Core Guarantees
 
-### Fail-Closed by Default
-- Akanksha’s Behavior Validator is **mandatory**
-- If the validator fails, throws, or is unavailable → **execution is blocked**
-- Action enforcement also fails closed on any violation
+### Execution Authorization Only
+- Produces an explicit **execution_allowed** signal
+- Issues a deterministic **execution_token**
+- Never performs execution itself
 
-### Deterministic Enforcement
+### Fail-Closed (Non-Negotiable)
+- Akanksha validator is mandatory
+- If validator fails, throws, or is unavailable → **execution is denied**
+- Missing or invalid authorization → executor must refuse
+
+### Deterministic by Design
 - No UUIDs
 - No timestamps
 - No randomness
-- Deterministic trace IDs
 
-# Raj Prajapati — Enforcement Runtime Gateway Lock  
-**AI Assistant | Phase C — Final Execution Spine**
+**execution_token = SHA256(action_request + enforcement_context + ENGINE_VERSION)**
 
----
+Same input → same token  
+Different input → different token
 
-## Purpose
-
-This repository implements a **live, non-bypassable enforcement runtime gateway**  
-that governs **both content and real-world actions**.
-
-Enforcement is the **final authority** before:
-- Any task
-- Any response
-- Any real-world action (message, platform interaction, execution)
-
-No output or action reaches the outside world unless enforcement explicitly approves it.
-
-This system governs **runtime reality**, not just decision logic.
-
----
-
-## Core Guarantees
-
-### Fail-Closed by Default
-- Akanksha’s Behavior Validator is **mandatory**
-- If the validator fails, throws, or is unavailable → **execution is blocked**
-- Action enforcement also fails closed on any violation
-
-### Deterministic Enforcement
-- No UUIDs
-- No timestamps
-- No randomness
-- Deterministic trace IDs
-
-trace_id = hash(input + category + version)
-action_trace_id = hash(action_request + context + version)
-
-### No Bypass Paths
-- No direct execution
+### Non-Bypassable
 - No UI-triggered execution
-- No mock validators
+- No direct executor access
+- No mock authorizations
 - No alternate pipelines
 
-### Replayable & Auditable
-- Every decision is logged and replay-verifiable
-- All enforcement decisions are stored in `logs/replayable_traces.json`
-- Replay tool available at `tools/replay_tool.py`
-
 ---
 
-## Runtime Flow (Content)
+## Runtime Flow
 ```
-Sankalp (Assistant Output)
+Sankalp (Intent Metadata)
 ↓
-Enforcement Gateway (LIVE)
+Enforcement / Authorization Gateway
 ↓
-Akanksha Behavior Validator (Canonical)
+Akanksha Validator (Safety Verdict)
 ↓
-Raj Enforcement Engine
+Execution Authorization Decision
 ↓
-FINAL CONTENT DECISION (EXECUTE | REWRITE | BLOCK)
-↓
-Frontend (only if approved)
+Executor (executes ONLY if authorized)
 ```
----
 
-## Runtime Flow (Action-Level)
-```
-Approved Content
-↓
-Action Request (SEND_MESSAGE / PLATFORM_ACTION)
-↓
-ActionEnforcementGateway (FINAL AUTHORITY)
-↓
-Kill-Switch / Rate / Platform / Target Checks
-↓
-ACTION DECISION (EXECUTE | BLOCK)
-↓
-Real-World Execution (only if approved)
-```
----
-
-## Enforcement Scope
-
-### Content Enforcement
-- Risk detection via Akanksha validator
-- Deterministic decision mapping
-- Fail-closed adapter
-- No response without approval
-
-### Action-Level Enforcement (Phase C)
-Enforces decisions on:
-- **Who can be messaged**
-- **How often** (rate limiting)
-- **Which platforms** are allowed
-- **Kill-switch capability**
-  - Immediate termination on critical signals
-- Deterministic enforcement for all actions
-
-No real-world action executes without passing this gate.
+Executor **must refuse execution** without valid authorization.
 
 ---
 
 ## Day-by-Day Completion Status
 
-### Day 1 — Enforcement Gateway Hardening ✅
-- Removed UUIDs and time-based traces
-- Implemented deterministic trace IDs
-- Frozen enforcement contract v3.0
+### Day 1 — Execution Authorization Contract ✅
+- Defined execution authorization schema
+- Deterministic token rules frozen
 
-**Outputs**
-- `contracts/enforcement_contract_v3.md`
-- `proof/deterministic_trace_proof.json`
+**Output**
+- `EXECUTION_AUTH_CONTRACT.md`
 
 ---
 
-### Day 1 — Live Validator Wiring ✅
-- Akanksha validator wired as mandatory upstream
-- No mocks or fallbacks
-- Validator failure → enforcement fails closed
+### Day 2 — Allow-Path Wiring ✅
+- ALLOW → execution token issued
+- SOFT_REWRITE / BLOCK → no token generated
+- Deterministic hashing proven
 
-**Outputs**
-- Live enforcement logs
-- Failure-case proof
-
----
-
-### Day 2 — Pipeline Sovereignty ✅
-- Sankalp ARL forced through enforcement
-- No frontend response without approval
-- All alternate execution paths removed
-
-**Outputs**
-- Sankalp → Raj → final decision traces (10+)
-
----
-
-### Day 2 — Bucket Replay Integration ✅
-- All enforcement decisions logged
-- Deterministic replay implemented
-
-**Outputs**
-- `logs/replayable_traces.json`
-- `tools/replay_tool.py`
-
----
-
-### Day 3 — Demo Lock (Content) ✅
-- Demonstrated ALLOW, SOFT_REWRITE, HARD_BLOCK
-- Enforcement visibly stops execution
-
-**Outputs**
-- `demo_scenarios.md`
-- Demo video
-- Final enforcement confirmation
-
----
-
-### Phase C — Action-Level Enforcement ✅
-- Action enforcement gateway implemented
-- Kill-switch enforced
-- Rate limits enforced
-- Platform restrictions enforced
-- Deterministic action trace IDs
-- Blocked action demo proven
-
-**Outputs**
+**Output**
 - `action_enforcement.py`
-- `orchestrator_runtime.py`
-- `proof/action_block_runtime.json`
-- `proof/deterministic_action_trace_proof.json`
-- `run_action_demo.py`
+
+---
+
+### Day 3 — Executor Handshake ✅
+- Executor refuses execution without authorization
+- Negative paths tested
+- Allow-path logged
+
+**Output**
+- `allow_path_demo_logs.json`
+
+---
+
+### Day 4 — Replay & Proof ✅
+- Same input → same execution_token
+- Different input → different execution_token
+- Allow + block demonstrated
+
+**Output**
+- `AUTHORIZATION_DEMO_PROOF.md`
+- Demo video (3–4 min)
 
 ---
 
 ## Key Files
 
-### Core Runtime
-- `enforcement_gateway.py` — Content runtime gate  
-- `enforcement_engine.py` — Validator-wired engine  
-- `action_enforcement.py` — Action-level enforcement gateway  
-- `orchestrator_runtime.py` — Final execution authority  
-
-### Validators
-- `validators/akanksha/behavior_validator.py` — Canonical validator  
-- `validators/akanksha/enforcement_adapter.py` — Fail-closed adapter  
-
-### Proof & Replay
-- `logs/replayable_traces.json` — Content enforcement logs  
-- `tools/replay_tool.py` — Deterministic replay verifier  
-- `proof/action_block_runtime.json` — Action blocked proof  
+- `action_enforcement.py` — Execution authorization gateway  
+- `orchestrator_runtime.py` — Executor handshake enforcement  
+- `EXECUTION_AUTH_CONTRACT.md` — Authorization schema  
+- `AUTHORIZATION_DEMO_PROOF.md` — Determinism proof  
+- `allow_path_demo_logs.json` — Allow / block logs  
 
 ---
 
 ## System Status
 
-**LOCKED**  
+**EXECUTION-GATED**  
 **DETERMINISTIC**  
 **FAIL-CLOSED**  
-**NON-BYPASSABLE**  
+**NON-BYPASSABLE**
 
-**No enforcement → No content → No action → No execution**
+_No authorization → no execution_
