@@ -1,0 +1,19 @@
+{
+  "intelligence": {
+    "data": {
+      "trace_id": "intel-replay-001",
+      "intent": "send greeting",
+      "suggested_action": "SEND_MESSAGE",
+      "confidence": 0.40,
+      "version_hash": "INTELLIGENCE_V1_LOCKED"
+    }
+  },
+  "context": {
+    "emotional_output": {},
+    "age_gate_status": "ALLOWED",
+    "region_policy": "IN",
+    "platform_policy": "WHATSAPP",
+    "karma_score": 0.2,
+    "risk_flags": []
+  }
+}

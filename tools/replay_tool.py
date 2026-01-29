@@ -2,7 +2,11 @@
 REPLAY TOOL
 ===========
 Deterministically replays enforcement decisions
-from stored traces (JSON ARRAY).
+from stored enforcement traces.
+
+READ-ONLY
+NO EXECUTION
+NO TRACE GENERATION
 """
 
 import json
@@ -17,8 +21,20 @@ from models.enforcement_input import EnforcementInput
 from utils.deterministic_trace import generate_trace_id
 
 
+def _extract_input_snapshot(trace: dict) -> dict:
+    """
+    Backward-compatible input extraction.
+    FAIL-CLOSED if no valid input found.
+    """
+    for key in ("input_snapshot", "input", "payload"):
+        if key in trace:
+            return trace[key]
+    raise KeyError("No valid input snapshot found in trace")
+
+
 def replay_trace(trace: dict) -> bool:
-    input_snapshot = trace["input_snapshot"]
+    input_snapshot = _extract_input_snapshot(trace)
+
     expected_trace_id = trace["trace_id"]
     expected_decision = trace["final_decision"]
 
@@ -43,11 +59,11 @@ def replay_trace(trace: dict) -> bool:
     decision_match = decision.decision == expected_decision
 
     print("—" * 60)
-    print(f"Trace ID match     : {'✅' if trace_match else '❌'}")
-    print(f"Decision match     : {'✅' if decision_match else '❌'}")
-    print(f"Expected decision  : {expected_decision}")
-    print(f"Replayed decision  : {decision.decision}")
-    print(f"Trace ID           : {expected_trace_id}")
+    print(f"Trace ID match    : {'✅' if trace_match else '❌'}")
+    print(f"Decision match    : {'✅' if decision_match else '❌'}")
+    print(f"Expected decision : {expected_decision}")
+    print(f"Replayed decision : {decision.decision}")
+    print(f"Trace ID          : {expected_trace_id}")
 
     return trace_match and decision_match
 
@@ -56,7 +72,7 @@ def main(trace_file: str):
     with open(trace_file, "r", encoding="utf-8") as f:
         traces = json.load(f)
 
-    print(f"\nLoaded {len(traces)} trace(s)\n")
+    print(f"\nLoaded {len(traces)} enforcement trace(s)\n")
 
     all_passed = True
     for trace in traces:
@@ -65,9 +81,9 @@ def main(trace_file: str):
 
     print("\n" + "=" * 60)
     if all_passed:
-        print("REPLAY VERIFIED ✅ — SYSTEM IS DETERMINISTIC")
+        print("REPLAY VERIFIED ✅ — ENFORCEMENT IS DETERMINISTIC")
     else:
-        print("REPLAY FAILED ❌ — NON-DETERMINISM DETECTED")
+        print("REPLAY FAILED ❌ — TRACE MISMATCH DETECTED")
     print("=" * 60)
 
 

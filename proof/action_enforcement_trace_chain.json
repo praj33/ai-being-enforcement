@@ -1,0 +1,12 @@
+{
+  "blocked_action": {
+    "platform": "WHATSAPP",
+    "decision": "BLOCK",
+    "enforcement_decision_id": "d7f4faba0f51b1d09cd08d8105a5644a65794be8aed1ddc9d5fb23816cff09c9"
+  },
+  "allowed_action": {
+    "platform": "INSTAGRAM",
+    "decision": "EXECUTE",
+    "enforcement_decision_id": "5db7541ff5cb3419312dd1c65c709069bd2e9b39c48fab1a952f21b0e67f6773"
+  }
+}

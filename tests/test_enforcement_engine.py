@@ -2,12 +2,13 @@ import pytest
 from enforcement_engine import enforce
 from models.enforcement_input import EnforcementInput
 
+
 def make_input(
     intent="test",
     dependency_score=0.0,
     age_gate_status="ALLOWED",
     region_policy="IN",
-    platform_policy="YOUTUBE",
+    platform_policy="INSTAGRAM",  # ✅ allowed platform
     karma_score=0.0,
     risk_flags=None
 ):
@@ -24,83 +25,101 @@ def make_input(
         risk_flags=risk_flags or []
     )
 
+
 # -------------------------------------------------
 # BASIC BEHAVIOR
 # -------------------------------------------------
 
-def test_safe_input_executes():
-    decision = enforce(make_input())
-    assert decision.decision == "EXECUTE"
+def test_safe_input_allows():
+    verdict = enforce(make_input())
+    assert verdict.decision == "ALLOW"
+
 
 def test_dependency_triggers_rewrite():
-    decision = enforce(make_input(dependency_score=0.9))
-    assert decision.decision == "REWRITE"
+    verdict = enforce(make_input(dependency_score=0.9))
+    assert verdict.decision == "REWRITE"
+
 
 def test_age_block_overrides_everything():
-    decision = enforce(
+    verdict = enforce(
         make_input(
             dependency_score=0.9,
             age_gate_status="BLOCKED"
         )
     )
-    assert decision.decision == "BLOCK"
+    assert verdict.decision == "BLOCK"
+
 
 # -------------------------------------------------
 # PRIORITY COLLISIONS
 # -------------------------------------------------
 
 def test_block_overrides_rewrite():
-    decision = enforce(
+    verdict = enforce(
         make_input(
             dependency_score=0.9,
             risk_flags=["SEXUAL_ESCALATION"]
         )
     )
-    assert decision.decision == "BLOCK"
+    assert verdict.decision == "BLOCK"
+
 
 def test_multiple_blocks_still_block():
-    decision = enforce(
+    verdict = enforce(
         make_input(
             age_gate_status="BLOCKED",
             risk_flags=["SEXUAL_ESCALATION", "HIGH_RISK"]
         )
     )
-    assert decision.decision == "BLOCK"
+    assert verdict.decision == "BLOCK"
+
 
 # -------------------------------------------------
 # KARMA SAFETY
 # -------------------------------------------------
 
 def test_high_karma_does_not_bypass_safety():
-    decision = enforce(
+    verdict = enforce(
         make_input(
             karma_score=1.0,
             risk_flags=["HIGH_RISK"]
         )
     )
-    assert decision.decision == "BLOCK"
+    assert verdict.decision == "BLOCK"
+
 
 # -------------------------------------------------
 # DETERMINISM
 # -------------------------------------------------
 
-def test_same_input_same_decision():
+def test_same_input_same_decision_and_trace():
     input_data = make_input(dependency_score=0.8)
-    d1 = enforce(input_data)
-    d2 = enforce(input_data)
-    assert d1.decision == d2.decision
+    v1 = enforce(input_data)
+    v2 = enforce(input_data)
+
+    assert v1.decision == v2.decision
+    assert v1.trace_id == v2.trace_id
+
 
 # -------------------------------------------------
-# NO LEAKAGE
+# NO INTERNAL LEAKAGE
 # -------------------------------------------------
 
-def test_no_internal_reason_leak():
-    decision = enforce(make_input(dependency_score=0.9))
-    assert hasattr(decision, "trace_id")
-    assert not hasattr(decision, "evaluator_results")
+def test_no_internal_state_leak():
+    verdict = enforce(make_input(dependency_score=0.9))
 
-def test_rewrite_guidance_present_on_rewrite():
-    decision = enforce(make_input(dependency_score=0.9))
-    assert decision.decision == "REWRITE"
-    assert decision.rewrite_guidance is not None
-    assert decision.rewrite_guidance.rewrite_class == "REDUCE_EMOTIONAL_DEPENDENCY"
+    assert hasattr(verdict, "trace_id")
+    assert not hasattr(verdict, "evaluator_results")
+    assert not hasattr(verdict, "akanksha_result")
+
+
+# -------------------------------------------------
+# REWRITE CONTRACT
+# -------------------------------------------------
+
+def test_rewrite_contains_rewrite_class():
+    verdict = enforce(make_input(dependency_score=0.9))
+
+    assert verdict.decision == "REWRITE"
+    assert verdict.rewrite_class is not None
+    assert verdict.rewrite_class == "DETERMINISTIC_REWRITE"

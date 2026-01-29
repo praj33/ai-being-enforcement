@@ -58,88 +58,88 @@ class ActionEnforcementGateway:
         """
 
         # --------------------------------------------------------------
-        # 0️⃣ KILL-SWITCH (ABSOLUTE PRIORITY)
+        # 0️⃣ INPUT FREEZE (IMMUTABLE SNAPSHOT)
         # --------------------------------------------------------------
-        if self._kill_switch_triggered(context):
-            trace_id = self._deterministic_trace_id(
-                action_request,
-                context,
-                category="KILL_SWITCH",
-            )
+        action_snapshot = dict(action_request)
+        context_snapshot = dict(context)
+        history_snapshot = dict(action_history)
+
+        # --------------------------------------------------------------
+        # 1️⃣ KILL-SWITCH (ABSOLUTE PRIORITY)
+        # --------------------------------------------------------------
+        if self._kill_switch_triggered(context_snapshot):
             return self._blocked(
-                trace_id=trace_id,
+                trace_id=self._trace(
+                    action_snapshot,
+                    context_snapshot,
+                    category="KILL_SWITCH",
+                ),
                 reason="KILL_SWITCH_TRIGGERED",
             )
 
         # --------------------------------------------------------------
-        # 1️⃣ CONTENT ENFORCEMENT DEPENDENCY
+        # 2️⃣ CONTENT ENFORCEMENT DEPENDENCY
         # --------------------------------------------------------------
-        if context.get("content_decision") != "EXECUTE":
-            trace_id = self._deterministic_trace_id(
-                action_request,
-                context,
-                category="CONTENT_BLOCK",
-            )
+        if context_snapshot.get("content_decision") != "EXECUTE":
             return self._blocked(
-                trace_id=trace_id,
+                trace_id=self._trace(
+                    action_snapshot,
+                    context_snapshot,
+                    category="CONTENT_BLOCK",
+                ),
                 reason="CONTENT_NOT_APPROVED",
             )
 
         # --------------------------------------------------------------
-        # 2️⃣ PLATFORM ENFORCEMENT
+        # 3️⃣ PLATFORM ENFORCEMENT
         # --------------------------------------------------------------
-        platform = action_request.get("platform")
+        platform = action_snapshot.get("platform")
         if platform not in self.ALLOWED_PLATFORMS:
-            trace_id = self._deterministic_trace_id(
-                action_request,
-                context,
-                category="PLATFORM_BLOCK",
-            )
             return self._blocked(
-                trace_id=trace_id,
+                trace_id=self._trace(
+                    action_snapshot,
+                    context_snapshot,
+                    category="PLATFORM_BLOCK",
+                ),
                 reason="PLATFORM_NOT_ALLOWED",
             )
 
         # --------------------------------------------------------------
-        # 3️⃣ TARGET ENFORCEMENT
+        # 4️⃣ TARGET ENFORCEMENT
         # --------------------------------------------------------------
-        if not self._target_allowed(action_request, context):
-            trace_id = self._deterministic_trace_id(
-                action_request,
-                context,
-                category="TARGET_BLOCK",
-            )
+        if not self._target_allowed(action_snapshot, context_snapshot):
             return self._blocked(
-                trace_id=trace_id,
+                trace_id=self._trace(
+                    action_snapshot,
+                    context_snapshot,
+                    category="TARGET_BLOCK",
+                ),
                 reason="TARGET_NOT_ALLOWED",
             )
 
         # --------------------------------------------------------------
-        # 4️⃣ RATE LIMIT ENFORCEMENT
+        # 5️⃣ RATE LIMIT ENFORCEMENT
         # --------------------------------------------------------------
-        if self._rate_limit_exceeded(action_history):
-            trace_id = self._deterministic_trace_id(
-                action_request,
-                context,
-                category="RATE_LIMIT_BLOCK",
-            )
+        if self._rate_limit_exceeded(history_snapshot):
             return self._blocked(
-                trace_id=trace_id,
+                trace_id=self._trace(
+                    action_snapshot,
+                    context_snapshot,
+                    category="RATE_LIMIT_BLOCK",
+                ),
                 reason="RATE_LIMIT_EXCEEDED",
             )
 
         # --------------------------------------------------------------
-        # ✅ ACTION APPROVED
+        # ✅ ACTION APPROVED (EXECUTION TOKEN)
         # --------------------------------------------------------------
-        trace_id = self._deterministic_trace_id(
-            action_request,
-            context,
-            category="EXECUTE",
-        )
-
         return {
             "action_decision": "EXECUTE",
-            "trace_id": trace_id,
+            "trace_id": self._trace(
+                action_snapshot,
+                context_snapshot,
+                category="EXECUTE",
+            ),
         }
 
     # ------------------------------------------------------------------
@@ -162,20 +162,22 @@ class ActionEnforcementGateway:
     def _rate_limit_exceeded(self, action_history: Dict) -> bool:
         return action_history.get("actions_sent", 0) >= self.MAX_ACTIONS_PER_SESSION
 
-    def _deterministic_trace_id(
-        self,
-        action_request: Dict,
-        context: Dict,
-        category: str,
-    ) -> str:
+    def _trace(self, action: Dict, context: Dict, *, category: str) -> str:
         """
         Deterministic action trace ID.
         NO UUIDs.
         NO timestamps.
         NO randomness.
         """
-        base = f"{action_request}|{context}|{category}|{ENGINE_VERSION}"
-        return hashlib.sha256(base.encode()).hexdigest()
+        material = {
+            "action": action,
+            "context": context,
+            "category": category,
+            "engine_version": ENGINE_VERSION,
+        }
+        return hashlib.sha256(
+            repr(material).encode("utf-8")
+        ).hexdigest()
 
     def _blocked(self, *, trace_id: str, reason: str) -> Dict:
         return {

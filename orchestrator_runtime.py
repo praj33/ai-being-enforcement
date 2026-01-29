@@ -13,11 +13,11 @@ from action_enforcement import ActionEnforcementGateway
 class OrchestratorRuntime:
     """
     Final execution spine.
-    This is the last code allowed before real-world action.
+    LAST code allowed before real-world action.
     """
 
     def __init__(self):
-        # 🔒 Real action enforcer (no mocks, no bypass)
+        # 🔒 Single, real enforcement authority
         self.action_enforcer = ActionEnforcementGateway()
 
     def execute_action(
@@ -29,24 +29,27 @@ class OrchestratorRuntime:
     ) -> dict:
         """
         FINAL execution entrypoint.
-        Any denial → HARD STOP.
+        No bypass. No fallback. No override.
         """
 
-        decision = self.action_enforcer.approve_action(
+        verdict = self.action_enforcer.approve_action(
             action_request=action_request,
             context=enforcement_context,
             action_history=action_history,
         )
 
-        # 🚨 FAIL-CLOSED CHECK (MANDATORY)
-        if decision.get("action_decision") != "EXECUTE":
-            # ❌ ABSOLUTE BLOCK — NO SIDE EFFECTS
-            raise RuntimeError(
-                f"ACTION BLOCKED | reason={decision.get('reason')} | trace_id={decision['trace_id']}"
-            )
+        # -------------------------------------------------
+        # 🚨 FAIL-CLOSED — ABSOLUTE
+        # -------------------------------------------------
+        if verdict.get("action_decision") != "EXECUTE":
+            # No execution. No retries. No side effects.
+            raise RuntimeError("ACTION_EXECUTION_DENIED")
 
-        # ✅ Execution permitted (stub only — real action happens here)
+        # -------------------------------------------------
+        # ✅ EXECUTION PERMITTED
+        # (Real-world action happens beyond this point)
+        # -------------------------------------------------
         return {
             "status": "ACTION_EXECUTED",
-            "trace_id": decision["trace_id"],
+            "enforcement_decision_id": verdict["trace_id"],
         }

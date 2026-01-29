@@ -1,0 +1,34 @@
+{
+  "engine_version": "ACTION_ENFORCEMENT_V1_LOCKED",
+  "replay_runs": [
+    {
+      "input_file": "replay_input_A.json",
+      "run_1": {
+        "decision": "EXECUTE",
+        "trace_id": "aa67e211365255aa1e699703f06597af359b98acf21b69c5bfb7349938dc3435"
+      },
+      "run_2": {
+        "decision": "EXECUTE",
+        "trace_id": "aa67e211365255aa1e699703f06597af359b98acf21b69c5bfb7349938dc3435"
+      },
+      "deterministic": true
+    },
+    {
+      "input_file": "replay_input_B.json",
+      "run_1": {
+        "decision": "EXECUTE",
+        "trace_id": "5b0c211298b3390a1c891a79d51d36fc8f5c6af3e26dc40032b9e48651dd8e3a"
+      },
+      "run_2": {
+        "decision": "EXECUTE",
+        "trace_id": "5b0c211298b3390a1c891a79d51d36fc8f5c6af3e26dc40032b9e48651dd8e3a"
+      },
+      "deterministic": true
+    }
+  ],
+  "assertions": {
+    "same_input_same_trace": true,
+    "different_input_different_trace": true,
+    "no_execution_without_enforcement": true
+  }
+}

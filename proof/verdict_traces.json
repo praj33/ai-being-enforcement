@@ -1,0 +1,62 @@
+[
+  {
+    "trace_id": "trace-001",
+    "decision": "ALLOW",
+    "scope": "response",
+    "reason_code": "CLEAN_CONTENT"
+  },
+  {
+    "trace_id": "trace-002",
+    "decision": "REWRITE",
+    "scope": "response",
+    "reason_code": "TONE_ADJUSTMENT"
+  },
+  {
+    "trace_id": "trace-003",
+    "decision": "BLOCK",
+    "scope": "response",
+    "reason_code": "AGE_RESTRICTION"
+  },
+  {
+    "trace_id": "trace-004",
+    "decision": "BLOCK",
+    "scope": "both",
+    "reason_code": "EMOTIONAL_DEPENDENCY"
+  },
+  {
+    "trace_id": "trace-005",
+    "decision": "ALLOW",
+    "scope": "action",
+    "reason_code": "SAFE_ACTION"
+  },
+  {
+    "trace_id": "trace-kill-001",
+    "decision": "TERMINATE",
+    "scope": "both",
+    "reason_code": "KILL_SWITCH_TRIGGERED"
+  },
+  {
+    "trace_id": "trace-007",
+    "decision": "BLOCK",
+    "scope": "action",
+    "reason_code": "RATE_LIMIT_EXCEEDED"
+  },
+  {
+    "trace_id": "trace-008",
+    "decision": "REWRITE",
+    "scope": "response",
+    "reason_code": "SOFT_SAFETY"
+  },
+  {
+    "trace_id": "trace-009",
+    "decision": "ALLOW",
+    "scope": "both",
+    "reason_code": "LOW_RISK"
+  },
+  {
+    "trace_id": "trace-010",
+    "decision": "BLOCK",
+    "scope": "both",
+    "reason_code": "VALIDATOR_OVERRIDE"
+  }
+]
