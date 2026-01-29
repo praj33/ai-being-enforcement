@@ -41,12 +41,13 @@ Sankalp receives the following object:
   "rewrite_class": "<optional>"
 }
 ```
-Required Behavior
-Enforcement Decision|Sankalp Behavior
-ALLOW|Render response normally
-REWRITE|Regenerate response using rewrite_class
-BLOCK|No response rendered
-TERMINATE|No response rendered, show system-safe fallback
+### Required Behavior
+
+Enforcement Decision|Sankalp Behavior|
+ALLOW|Render response normally|
+REWRITE|Regenerate response using rewrite_class|
+BLOCK|No response rendered|
+TERMINATE|No response rendered, show system-safe fallback|
 
 ---
 

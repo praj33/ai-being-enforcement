@@ -1,124 +1,240 @@
 # Raj Prajapati — Enforcement → Execution Authorization Gateway  
-**AI Assistant | Phase C**
+**Product:** AI Assistant / AI-Being  
+**Phase:** Integration Phase C (Final Authority Closure)  
+**Status:** ✅ COMPLETE — Demo-Blocking Tasks Closed
 
 ---
 
-## Purpose
+## Overview
 
-This repository upgrades enforcement from a **decision engine** to a **runtime execution authorizer**.
+This repository implements the **final, authoritative enforcement layer** for the AI-Being system.
 
-No real-world action (message, platform action, execution) can occur unless this system
-**explicitly authorizes execution** with a deterministic token.
+It upgrades enforcement from a **content decision engine** into a **hard execution gate** that controls:
 
-This gateway does **not execute actions**.  
-It only decides **whether execution is allowed**.
+- What the system is allowed to **say**
+- What the system is allowed to **do**
+- Whether any **real-world action** may execute
+
+> **Nothing speaks. Nothing acts. Nothing executes — unless enforcement explicitly allows it.**
+
+This system is **deterministic, fail-closed, replayable, and non-bypassable**.
 
 ---
 
-## Core Guarantees
+## Core Responsibilities
 
-### Execution Authorization Only
-- Produces an explicit **execution_allowed** signal
-- Issues a deterministic **execution_token**
-- Never performs execution itself
+This enforcement layer is responsible for:
 
-### Fail-Closed (Non-Negotiable)
-- Akanksha validator is mandatory
-- If validator fails, throws, or is unavailable → **execution is denied**
-- Missing or invalid authorization → executor must refuse
+- Consuming **deterministic Intelligence output**
+- Producing a **single, unified enforcement verdict**
+- Enforcing **ALLOW / REWRITE / BLOCK / TERMINATE**
+- Authorizing or denying **real-world actions**
+- Emitting **replayable, auditable enforcement traces**
+- Acting as the **final authority gate** in the runtime pipeline
 
-### Deterministic by Design
-- No UUIDs
-- No timestamps
-- No randomness
+This system **does not execute actions**.  
+It only **authorizes or denies execution**.
 
-**execution_token = SHA256(action_request + enforcement_context + ENGINE_VERSION)**
+---
 
-Same input → same token  
-Different input → different token
+## Enforcement Guarantees
 
-### Non-Bypassable
+### 1. Unified Enforcement Verdict (Single Source of Truth)
+
+All decisions resolve to a single immutable object:
+```python
+EnforcementVerdict {
+decision: ALLOW | REWRITE | BLOCK | TERMINATE
+scope: response | action | both
+reason_code: deterministic policy reason
+trace_id: deterministic hash
+}
+```
+
+- Response Engine **cannot override**
+- Action Layer **cannot override**
+- Orchestrator **must obey**
+
+---
+
+### 2. Fail-Closed by Design (Non-Negotiable)
+
+- Akanksha Safety Validator is **mandatory**
+- Any failure, exception, or unavailability → **TERMINATE**
+- Missing or invalid verdict → **no execution**
+- No soft fallbacks, no retries, no bypass paths
+
+---
+
+### 3. Deterministic by Construction
+
+The system uses **no randomness**:
+
+- ❌ No UUIDs  
+- ❌ No timestamps  
+- ❌ No entropy  
+
+All trace IDs are derived from a **canonical input snapshot**:
+```python
+trace_id = SHA256(
+canonical_input_payload +
+enforcement_decision +
+ENGINE_VERSION
+)
+```
+
+**Same input → same decision → same trace**  
+**Different input → different trace**
+
+Determinism is **proven via replay tooling**.
+
+---
+
+### 4. Action-Level Sovereignty
+
+Real-world actions (WhatsApp, Email, Platform APIs, etc.) are protected by an **Action Enforcement Gateway**.
+
+- ALLOW → execution permitted with trace continuity
+- BLOCK / TERMINATE → execution hard-stopped
+- Executor **must refuse** execution without authorization
+
+---
+
+### 5. Non-Bypassable Runtime Architecture
+
+There is **no valid execution path** that does not pass through enforcement.
+
 - No UI-triggered execution
 - No direct executor access
-- No mock authorizations
+- No mock authorization
 - No alternate pipelines
 
 ---
 
 ## Runtime Flow
 ```
-Sankalp (Intent Metadata)
+Ishan (Intelligence Output)
 ↓
-Enforcement / Authorization Gateway
+Enforcement Gateway (Final Authority)
 ↓
 Akanksha Validator (Safety Verdict)
 ↓
-Execution Authorization Decision
+Unified EnforcementVerdict
 ↓
-Executor (executes ONLY if authorized)
+Orchestrator Runtime
+↓
+Action Enforcement Gateway
+↓
+Executor (executes ONLY if allowed)
 ```
 
-Executor **must refuse execution** without valid authorization.
-
 ---
 
-## Day-by-Day Completion Status
+## Phase C Completion Status
 
-### Day 1 — Execution Authorization Contract ✅
-- Defined execution authorization schema
-- Deterministic token rules frozen
+### Day 1(a) — Intelligence → Enforcement Contract ✅
+
+- Intelligence contract locked
+- Required fields validated:
+  - trace_id
+  - intent
+  - suggested_action
+  - confidence
+  - version_hash
+- Malformed or mismatched intelligence → BLOCK
 
 **Output**
-- `EXECUTION_AUTH_CONTRACT.md`
+- `INTELLIGENCE_ENFORCEMENT_CONTRACT.md`
 
 ---
 
-### Day 2 — Allow-Path Wiring ✅
-- ALLOW → execution token issued
-- SOFT_REWRITE / BLOCK → no token generated
-- Deterministic hashing proven
+### Day 1(b) — Unified Enforcement Decision Surface ✅
+
+- Single verdict object finalized
+- Decision + scope + reason_code + trace_id enforced
+- 10 example verdict traces created
+- Response and Action layers made non-overrideable
+
+**Output**
+- `enforcement_verdict.py`
+- `proof/verdict_traces.json`
+
+---
+
+### Day 2(a) — Action-Level Enforcement Proof ✅
+
+- Disallowed actions deterministically blocked
+- Allowed actions pass with trace continuity
+- enforcement_decision_id emitted to audit bucket
+- WhatsApp / Email block demonstrated
+- Allow-path demonstrated
 
 **Output**
 - `action_enforcement.py`
+- `Action_Enforcement_Proof.md`
+- `action_enforcement_trace_chain.json`
 
 ---
 
-### Day 3 — Executor Handshake ✅
-- Executor refuses execution without authorization
-- Negative paths tested
-- Allow-path logged
+### Day 2(b) — Replay & Demo Closure ✅
+
+- Enforcement replay tool implemented
+- Identical verdicts reproduced from stored traces
+- Full determinism verified
+- Demo-grade replay artifacts captured
 
 **Output**
-- `allow_path_demo_logs.json`
-
----
-
-### Day 4 — Replay & Proof ✅
-- Same input → same execution_token
-- Different input → different execution_token
-- Allow + block demonstrated
-
-**Output**
-- `AUTHORIZATION_DEMO_PROOF.md`
-- Demo video (3–4 min)
+- `tools/replay_tool.py`
+- `logs/replayable_traces.json`
+- `enforcement_replay_proof.json`
+- Demo video (4–5 min)
 
 ---
 
 ## Key Files
 
-- `action_enforcement.py` — Execution authorization gateway  
-- `orchestrator_runtime.py` — Executor handshake enforcement  
-- `EXECUTION_AUTH_CONTRACT.md` — Authorization schema  
-- `AUTHORIZATION_DEMO_PROOF.md` — Determinism proof  
-- `allow_path_demo_logs.json` — Allow / block logs  
+| File | Purpose |
+|----|----|
+| `enforcement_engine.py` | Final enforcement authority |
+| `enforcement_verdict.py` | Unified verdict schema |
+| `enforcement_gateway.py` | Runtime enforcement API |
+| `action_enforcement.py` | Real-world action gate |
+| `orchestrator_runtime.py` | Execution handshake |
+| `tools/replay_tool.py` | Deterministic replay verifier |
+| `logs/replayable_traces.json` | Replayable audit traces |
+| `docs/integration_notes.md` | Integration guidance |
 
 ---
 
-## System Status
+## Integration Notes
 
-**EXECUTION-GATED**  
-**DETERMINISTIC**  
-**FAIL-CLOSED**  
-**NON-BYPASSABLE**
+### Sankalp — Response Engine
+- Must consume `EnforcementVerdict` exactly
+- `REWRITE` and `BLOCK` **must not** produce final output
+- No transformation or override of verdict fields allowed
 
-_No authorization → no execution_
+### Nilesh — Orchestration Layer
+- Must route **all flows** through enforcement
+- Executor must refuse execution without authorization
+- No alternate execution paths permitted
+
+See:  
+`docs/integration_notes.md`
+
+---
+
+## Final System Statement
+
+**Without enforcement → nothing speaks**  
+**Without enforcement → nothing acts**  
+**Without enforcement → nothing executes**
+
+This system is **governable, provable, deterministic, and fail-closed**.
+
+---
+
+## Status
+
+**PHASE C CLOSED**  
+**DEMO-BLOCKING CLEARED**  
+**ENFORCEMENT IS FINAL AUTHORITY**
